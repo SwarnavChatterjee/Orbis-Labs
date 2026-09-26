@@ -62,6 +62,7 @@ The shared contracts and database migration must be established on `main` before
 Detailed role prompts are available in:
 
 - [OpenAI planner prompt](team-prompts/openai-planner.md)
+- [Detailed OpenAI planner implementation plan](team-prompts/openai-planner-implementation-plan.md)
 - [API backend prompt](team-prompts/api-backend.md)
 - [Frontend dashboard prompt](team-prompts/frontend-dashboard.md)
 
