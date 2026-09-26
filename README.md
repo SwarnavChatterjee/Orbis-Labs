@@ -54,7 +54,9 @@ Next:
 
 - [Architecture](docs/architecture.md)
 - [Implementation plan](docs/implementation-plan.md)
+- [Current project context](docs/current-context.md)
 - [Contribution and branch workflow](CONTRIBUTING.md)
+- [Team prompts](docs/team-prompts/)
 
 ## Local setup
 

@@ -59,6 +59,12 @@ main
 
 The shared contracts and database migration must be established on `main` before the branches are distributed.
 
+Detailed role prompts are available in:
+
+- [OpenAI planner prompt](team-prompts/openai-planner.md)
+- [API backend prompt](team-prompts/api-backend.md)
+- [Frontend dashboard prompt](team-prompts/frontend-dashboard.md)
+
 ### OpenAI planner branch
 
 Owns the parser, ambiguity behavior, source routing, and parser evaluation tests.
@@ -89,4 +95,3 @@ The MVP is complete when a user can:
 PYTHONPATH=backend pytest backend/tests -q
 npm run build --prefix frontend
 ```
-
