@@ -1,0 +1,2 @@
+"""OpenAI-backed intelligence components."""
+

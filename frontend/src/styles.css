@@ -1,0 +1,16 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #e9eef5;
+  background: #0b111b;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+.shell { max-width: 860px; margin: 0 auto; padding: 12vh 24px; }
+.eyebrow { color: #8dd6c4; letter-spacing: .18em; text-transform: uppercase; font-size: .75rem; }
+h1 { max-width: 720px; font-size: clamp(2.5rem, 7vw, 5.5rem); line-height: .98; margin: 24px 0; }
+.intro { max-width: 560px; color: #a9b7c9; font-size: 1.1rem; line-height: 1.6; }
+.query-card { margin-top: 48px; padding: 18px; background: #121d2b; border: 1px solid #25364c; border-radius: 18px; }
+textarea { width: 100%; min-height: 120px; resize: vertical; border: 0; outline: 0; color: #e9eef5; background: transparent; font: inherit; line-height: 1.5; }
+button { margin-top: 14px; border: 0; border-radius: 999px; padding: 12px 18px; color: #08110f; background: #8dd6c4; font-weight: 700; cursor: pointer; }
+
