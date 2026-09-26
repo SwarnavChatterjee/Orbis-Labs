@@ -55,6 +55,9 @@ Next:
 - [Architecture](docs/architecture.md)
 - [Implementation plan](docs/implementation-plan.md)
 - [Current project context](docs/current-context.md)
+- [Complete architecture guide](docs/reference/orbis-labs-architecture-guide.md)
+- [Complete implementation plan](docs/reference/orbis-labs-implementation-plan.md)
+- [Repository translation](docs/reference/orbis-labs-repo-translation.md)
 - [Contribution and branch workflow](CONTRIBUTING.md)
 - [Team prompts](docs/team-prompts/)
 
