@@ -63,6 +63,7 @@ Detailed role prompts are available in:
 
 - [OpenAI planner prompt](team-prompts/openai-planner.md)
 - [Detailed OpenAI planner implementation plan](team-prompts/openai-planner-implementation-plan.md)
+- [Detailed API backend implementation plan](team-prompts/api-backend-implementation-plan.md)
 - [API backend prompt](team-prompts/api-backend.md)
 - [Frontend dashboard prompt](team-prompts/frontend-dashboard.md)
 
