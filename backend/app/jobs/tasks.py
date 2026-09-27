@@ -15,6 +15,7 @@ from app.collectors.registry import SOURCE_REGISTRY, CollectorRegistry
 from app.core.database import SessionFactory
 from app.core.config import settings
 from app.models.db import QueryEvent, QueryRecord, RecordRow, Source, utc_now
+from app.llm.parser import PlannerError, PlannerTransportError
 from app.models.schemas import QueryPlan
 
 logger = logging.getLogger(__name__)
@@ -88,16 +89,23 @@ async def process_query(
         await _record_transition(session, query, "running")
 
     try:
-        planner = parser or OpenAIQueryPlanner()
-        parse = planner.parse if hasattr(planner, "parse") else planner
-        if inspect.iscoroutinefunction(parse):
-            plan = await parse(raw_text)
-        else:
-            plan = await asyncio.to_thread(parse, raw_text)
-        if inspect.isawaitable(plan):
-            plan = await plan
-        if not isinstance(plan, QueryPlan):
-            plan = QueryPlan.model_validate(plan)
+        try:
+            planner = parser or OpenAIQueryPlanner()
+            parse = planner.parse if hasattr(planner, "parse") else planner
+            if inspect.iscoroutinefunction(parse):
+                plan = await parse(raw_text)
+            else:
+                plan = await asyncio.to_thread(parse, raw_text)
+            if inspect.isawaitable(plan):
+                plan = await plan
+            if not isinstance(plan, QueryPlan):
+                plan = QueryPlan.model_validate(plan)
+        except PlannerError:
+            raise
+        except Exception as exc:
+            raise PlannerTransportError(
+                "The query planner could not complete the request. Please retry."
+            ) from exc
 
         descriptors = collector_registry.route(plan.intent, plan.filters.role)
         plan.sources = [source.id for source in descriptors]
@@ -183,6 +191,18 @@ async def process_query(
             if query is not None:
                 message = "No registered collectors matched this query." if not descriptors else None
                 await _record_transition(session, query, "completed", message)
+    except PlannerError as exc:
+        logger.error(
+            "Query planning failed (%s)",
+            type(exc).__name__,
+            extra={"query_id": str(query_id)},
+        )
+        async with session_factory() as session:
+            query = await session.get(QueryRecord, query_id)
+            if query is not None and query.status != "completed":
+                await _record_transition(session, query, "failed", str(exc))
+        if worker_retry:
+            raise
     except Exception as exc:
         logger.error(
             "Query processing failed (%s)",
