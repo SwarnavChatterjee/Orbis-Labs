@@ -21,13 +21,13 @@ function Check() {
   return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8" /></svg>;
 }
 
-function App() {
+function LandingPage() {
   const [query, setQuery] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   function submitQuery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (query.trim()) setSubmitted(true);
+    if (query.trim()) window.location.href = `/app?query=${encodeURIComponent(query.trim())}`;
   }
 
   return (
@@ -36,7 +36,7 @@ function App() {
       <header className="nav wrap">
         <a className="brand" href="#top" aria-label="Orbis Labs home"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a>
         <nav className="nav-links" aria-label="Primary navigation"><a href="#how-it-works">How it works</a><a href="#principles">Why Orbis</a><a href="#about">About</a></nav>
-        <a className="nav-cta" href="#start">Start exploring <ArrowUpRight /></a>
+        <a className="nav-cta" href="/app">Start exploring <ArrowUpRight /></a>
       </header>
 
       <main id="top">
@@ -92,5 +92,48 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>);
+function WorkspacePage() {
+  const params = new URLSearchParams(window.location.search);
+  const [query, setQuery] = useState(params.get("query") ?? "");
+  const [activeQuery, setActiveQuery] = useState("");
 
+  function submitWorkspaceQuery(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (query.trim()) setActiveQuery(query.trim());
+  }
+
+  return (
+    <div className="workspace-shell">
+      <header className="workspace-nav">
+        <a className="brand" href="/" aria-label="Return to Orbis Labs home"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a>
+        <div className="workspace-nav-right"><span className="workspace-status"><span /> Workspace ready</span><span className="avatar">SC</span></div>
+      </header>
+      <div className="workspace-layout">
+        <aside className="workspace-sidebar">
+          <button className="new-query" type="button" onClick={() => { setQuery(""); setActiveQuery(""); }}><span>+</span> New collection</button>
+          <div className="sidebar-label">Workspace</div>
+          <a className="sidebar-link active" href="/app"><span>⌕</span> Explore data</a>
+          <a className="sidebar-link" href="#history"><span>◷</span> Query history</a>
+          <div className="sidebar-label history-label">Recent queries</div>
+          <div className="recent-query"><span className="recent-dot" /><div><strong>Software internships</strong><small>Just now · Draft</small></div></div>
+          <div className="recent-query muted"><span className="recent-dot" /><div><strong>Product roles</strong><small>Yesterday · Completed</small></div></div>
+          <div className="sidebar-footer"><div className="sidebar-card"><Spark /><div><strong>Source-backed by design</strong><small>Every record has a trail.</small></div></div><a className="sidebar-link" href="/"><span>←</span> Back to home</a></div>
+        </aside>
+        <main className="workspace-main">
+          <div className="workspace-heading"><div><div className="eyebrow"><span className="eyebrow-dot" /> Orbis workspace</div><h1>What are you looking for?</h1><p>Describe the dataset you need. Orbis will structure, search, and organize the signal.</p></div><div className="workspace-badge"><Spark /><span>AI-assisted<br /><strong>data discovery</strong></span></div></div>
+          <form className="workspace-composer" onSubmit={submitWorkspaceQuery}>
+            <div className="workspace-composer-top"><Spark /><textarea aria-label="Search for data" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="e.g. Find software engineering internships in India for 2027 graduates..." rows={3} /></div>
+            <div className="workspace-composer-bottom"><div className="filter-pills"><button type="button">Internships <span>⌄</span></button><button type="button">Any location <span>⌄</span></button><button type="button">All sources <span>⌄</span></button></div><button className="primary-button" type="submit">{activeQuery ? "Run again" : "Start collection"}<ArrowUpRight /></button></div>
+          </form>
+          {activeQuery ? <section className="workspace-active"><div className="active-header"><div><span className="live-dot" /> Ready to collect</div><span>Query understood</span></div><h2>{activeQuery}</h2><div className="active-grid"><div><small>Intent</small><strong>Internship search</strong></div><div><small>Sources</small><strong>2 permitted sources</strong></div><div><small>Output</small><strong>Structured records</strong></div></div><button className="text-link" type="button" onClick={() => setActiveQuery("")}>Edit query <ArrowUpRight /></button></section> : <section className="workspace-empty"><div className="empty-orb"><Spark /></div><h2>Your next dataset starts here.</h2><p>Ask a question above to begin a source-backed collection. You’ll see progress, provenance, and results in this workspace.</p><div className="empty-features"><span><Check /> Source verified</span><span><Check /> Structured output</span><span><Check /> Export ready</span></div></section>}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return window.location.pathname.startsWith("/app") ? <WorkspacePage /> : <LandingPage />;
+}
+
+createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>);
