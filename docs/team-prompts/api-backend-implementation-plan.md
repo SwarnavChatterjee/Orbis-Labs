@@ -380,10 +380,11 @@ Recommended commands:
 
 ```bash
 uvicorn app.main:app --app-dir backend --reload
-procrastinate --app=app.jobs.tasks:app worker
+PYTHONPATH=backend procrastinate -a app.jobs.tasks.procrastinate_app worker queries
 ```
 
-Confirm the exact Procrastinate command and app object against the installed version before documenting it as final.
+The installed Procrastinate CLI uses the `-a module.attribute` form, and the
+registered application object is `app.jobs.tasks.procrastinate_app`.
 
 ## 13. SSE progress stream
 
@@ -678,4 +679,3 @@ The API backend should make the Orbis Labs workflow reliable, observable, and re
 ```text
 Thin routes → explicit services → durable jobs → source-backed records
 ```
-

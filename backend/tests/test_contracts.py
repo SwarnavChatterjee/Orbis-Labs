@@ -1,5 +1,5 @@
-from app.collectors.registry import SOURCE_REGISTRY, route_sources
-from app.models.schemas import QueryPlan
+from app.collectors.registry import CollectorRegistry
+from app.models.schemas import QueryPlan, SourceDescriptor
 
 
 def test_query_plan_defaults_are_schema_valid() -> None:
@@ -8,14 +8,21 @@ def test_query_plan_defaults_are_schema_valid() -> None:
     assert plan.ambiguity_flags == []
 
 
-def test_registry_routes_internship_queries() -> None:
-    sources = route_sources("internship_search", "software engineering")
-    assert {source.id for source in sources} == {"internshala", "gitlab_greenhouse"}
-    assert len(SOURCE_REGISTRY) == 2
+def test_registry_routes_only_registered_sources() -> None:
+    registry = CollectorRegistry()
+    source = SourceDescriptor(
+        id="fixture_source",
+        name="Fixture Source",
+        kind="api",
+        handles=["internship", "software_engineering"],
+        collector="fixture.collect",
+    )
+    registry.register(source, lambda _plan, _source: [])
+    sources = registry.route("internship_search", "software engineering")
+    assert [item.id for item in sources] == ["fixture_source"]
 
 
-def test_registry_routes_by_intent_without_role() -> None:
-    assert {source.id for source in route_sources("internship_search")} == {
-        "internshala",
-        "gitlab_greenhouse",
-    }
+def test_default_registry_does_not_select_unapproved_sources() -> None:
+    from app.collectors.registry import route_sources
+
+    assert route_sources("internship_search") == []
