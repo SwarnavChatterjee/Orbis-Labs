@@ -16,8 +16,8 @@ PostgreSQL database before starting the worker:
 ```powershell
 $env:PYTHONPATH = "backend"
 alembic -c backend/alembic.ini upgrade head
-procrastinate --app=app.jobs.tasks:procrastinate_app schema --apply
-procrastinate --app=app.jobs.tasks:procrastinate_app worker queries
+PYTHONPATH=backend procrastinate -a app.jobs.tasks.procrastinate_app schema --apply
+PYTHONPATH=backend procrastinate -a app.jobs.tasks.procrastinate_app worker queries
 ```
 
 Only explicitly registered collectors are eligible for source routing. The
