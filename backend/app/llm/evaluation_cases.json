@@ -1,0 +1,18 @@
+[
+  {"name":"india_internship_2027","input":"Find software engineering internships in India for 2027 graduates.","expected":{"intent":"internship_search","filters.location":"India","filters.graduation_year":2027}},
+  {"name":"job_search_bengaluru","input":"Find backend engineer jobs in Bengaluru.","expected":{"intent":"job_search","filters.role":"backend engineer","filters.location":"Bangalore"}},
+  {"name":"remote_data_jobs","input":"Find remote data analyst jobs.","expected":{"intent":"job_search","filters.remote":true}},
+  {"name":"internship_missing_location","input":"Find product design internships.","expected":{"intent":"internship_search","filters.role":"product design","ambiguity.location":true}},
+  {"name":"internship_missing_graduation","input":"Find internships in Pune for computer science students.","expected":{"intent":"internship_search","filters.location":"Pune","ambiguity.graduation_year":true}},
+  {"name":"internship_chennai_count","input":"Show me 12 marketing internships in Chennai.","expected":{"intent":"internship_search","filters.role":"marketing","filters.location":"Chennai","target_count":12}},
+  {"name":"job_hyderabad","input":"Find frontend developer jobs in Hyderabad.","expected":{"intent":"job_search","filters.role":"frontend developer","filters.location":"Hyderabad"}},
+  {"name":"intern_bangalore_abbreviation","input":"SWE intern roles in Bangalore for 2028 grads.","expected":{"intent":"internship_search","filters.location":"Bangalore","filters.graduation_year":2028}},
+  {"name":"remote_internship","input":"Remote UX internships for 2027 graduates.","expected":{"intent":"internship_search","filters.remote":true,"filters.graduation_year":2027,"ambiguity.location":true}},
+  {"name":"job_mumbai_count","input":"List 30 cybersecurity jobs in Mumbai.","expected":{"intent":"job_search","filters.role":"cybersecurity","filters.location":"Mumbai","target_count":30}},
+  {"name":"general_internship_missing_location","input":"I am looking for a finance internship.","expected":{"intent":"internship_search","filters.role":"finance","ambiguity.location":true}},
+  {"name":"uncertain_location","input":"Find engineering internships near Delhi, maybe Noida too.","expected":{"intent":"internship_search","ambiguity.location":true}},
+  {"name":"graduate_job_year","input":"Find data science jobs for 2026 graduates in India.","expected":{"intent":"job_search","filters.role":"data science","filters.location":"India","filters.graduation_year":2026}},
+  {"name":"remote_false","input":"Find on-site accounting jobs in Kochi.","expected":{"intent":"job_search","filters.remote":false,"filters.location":"Kochi"}},
+  {"name":"internship_delhi","input":"Find 5 machine learning internships in Delhi for 2027 grads.","expected":{"intent":"internship_search","filters.role":"machine learning","filters.location":"Delhi","filters.graduation_year":2027,"target_count":5}},
+  {"name":"unsupported_weather","input":"What will the weather be tomorrow?","expected":{"ambiguity.intent":true,"sources_empty":true}}
+]

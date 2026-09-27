@@ -39,6 +39,7 @@ def test_process_query_persists_plan_and_routes_sources() -> None:
             return QueryPlan(
                 intent="internship_search",
                 filters=QueryFilters(role="software_engineering"),
+                sources=["model-invented-source"],
             )
 
         await process_query(query_id, session_factory=TestSessionFactory, parser=fake_parser)
@@ -51,6 +52,32 @@ def test_process_query_persists_plan_and_routes_sources() -> None:
             assert set(query.parsed_params["sources"]) == {
                 source.id for source in SOURCE_REGISTRY
             }
+        await engine.dispose()
+
+    asyncio.run(scenario())
+
+
+def test_process_query_sanitizes_unexpected_parser_error() -> None:
+    async def scenario() -> None:
+        await create_tables()
+        query_id = uuid4()
+        async with TestSessionFactory() as session:
+            session.add(QueryRecord(id=query_id, raw_text="Find jobs"))
+            await session.commit()
+
+        def broken_parser(_raw_text: str) -> QueryPlan:
+            raise RuntimeError("provider response contains secret-token")
+
+        await process_query(query_id, session_factory=TestSessionFactory, parser=broken_parser)
+
+        async with TestSessionFactory() as session:
+            query = await session.get(QueryRecord, query_id)
+            assert query is not None
+            assert query.status == "failed"
+            assert query.error_message == (
+                "The query planner could not complete the request. Please retry."
+            )
+            assert "secret-token" not in query.error_message
         await engine.dispose()
 
     asyncio.run(scenario())

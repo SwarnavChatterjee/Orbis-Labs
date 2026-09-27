@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.collectors.registry import route_sources
 from app.core.database import SessionFactory
-from app.llm.parser import parse_query
+from app.llm.parser import PlannerError, parse_query
 from app.models.db import QueryRecord, utc_now
 from app.models.schemas import QueryPlan
 
@@ -40,9 +40,13 @@ async def process_query(
             query.parsed_params = plan.model_dump(mode="json")
             query.status = "planned"
             query.error_message = None
-        except Exception as exc:
+        except PlannerError as exc:
             query.status = "failed"
-            query.error_message = str(exc)[:1000]
+            query.error_message = str(exc)
+        except Exception:
+            # Provider/implementation details can contain request data or secrets.
+            query.status = "failed"
+            query.error_message = "The query planner could not complete the request. Please retry."
         finally:
             query.updated_at = utc_now()
             await session.commit()
