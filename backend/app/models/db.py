@@ -48,6 +48,19 @@ class QueryRecord(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=utc_now)
 
 
+class QueryEvent(SQLModel, table=True):
+    __tablename__ = "query_events"
+
+    id: int | None = Field(default=None, primary_key=True)
+    query_id: UUID = Field(foreign_key="queries.id", index=True)
+    status: str = Field(sa_column=Column(Text, nullable=False))
+    message: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    created_at: datetime = Field(
+        default_factory=utc_now,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+
+
 class RecordRow(SQLModel, table=True):
     __tablename__ = "records"
 

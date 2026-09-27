@@ -3,10 +3,13 @@ from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 
 Intent = Literal["internship_search", "job_search"]
+QueryStatus = Literal[
+    "queued", "running", "planned", "collecting", "cleaning", "completed", "failed"
+]
 
 
 class AmbiguityFlag(BaseModel):
@@ -75,8 +78,55 @@ class ApiError(BaseModel):
 class QuerySubmission(BaseModel):
     raw_text: str = Field(min_length=3, max_length=4000)
 
+    @field_validator("raw_text", mode="before")
+    @classmethod
+    def trim_raw_text(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
+
 
 class QueryAccepted(BaseModel):
     query_id: UUID
     status: Literal["accepted"] = "accepted"
+
+
+class QueryHistoryItem(BaseModel):
+    id: UUID
+    raw_text: str
+    status: QueryStatus
+    error_message: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class QueryDetails(QueryHistoryItem):
+    parsed_params: dict[str, object] | None = None
+    record_count: int = 0
+
+
+class Pagination(BaseModel):
+    page: int = Field(ge=1)
+    page_size: int = Field(ge=1, le=100)
+    total: int = Field(ge=0)
+
+
+class QueryHistoryPage(Pagination):
+    items: list[QueryHistoryItem]
+
+
+class QueryResultsPage(Pagination):
+    items: list[dict[str, object]]
+
+
+class QueryEventPayload(BaseModel):
+    query_id: UUID
+    status: QueryStatus
+    timestamp: datetime
+    message: str | None = None
+
+
+class SourceInfo(BaseModel):
+    id: str
+    name: str
+    kind: Literal["scrape", "api"]
+    handles: list[str]
 

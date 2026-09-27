@@ -7,6 +7,7 @@ asyncpg>=0.29,<1.0
 aiosqlite>=0.20,<1.0
 alembic>=1.14,<2.0
 procrastinate>=3.5,<4.0
+psycopg[pool]>=3.2,<4.0
 playwright>=1.48,<2.0
 httpx>=0.27,<1.0
 beautifulsoup4>=4.12,<5.0
