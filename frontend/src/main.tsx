@@ -3,12 +3,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
-const examples = [
-  "Software engineering internships in India",
-  "Remote product roles for early-career talent",
-  "Climate tech companies hiring in Bengaluru",
-];
-
 function ArrowUpRight() {
   return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 15 15 5M7 5h8v8" /></svg>;
 }
@@ -22,14 +16,6 @@ function Check() {
 }
 
 function LandingPage() {
-  const [query, setQuery] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  function submitQuery(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (query.trim()) window.location.href = `/app?query=${encodeURIComponent(query.trim())}`;
-  }
-
   return (
     <div className="page-shell">
       <div className="ambient ambient-one" /><div className="ambient ambient-two" />
@@ -45,11 +31,7 @@ function LandingPage() {
             <div className="eyebrow"><span className="eyebrow-dot" /> Intelligence for the real world</div>
             <h1>Ask for the data.<br /><span>Get the signal.</span></h1>
             <p className="hero-intro">Orbis Labs turns plain-language questions into clean, source-backed datasets—so you can move from curiosity to confident action.</p>
-            <form className="query-composer" id="start" onSubmit={submitQuery}>
-              <div className="composer-top"><Spark /><textarea aria-label="Describe the data you need" value={query} onChange={(event) => { setQuery(event.target.value); setSubmitted(false); }} placeholder="Tell us what you want to find..." rows={2} /></div>
-              <div className="composer-bottom"><span className="composer-hint">No prompt engineering required.</span><button className="primary-button" type="submit">{submitted ? "Request received" : "Start collection"}<ArrowUpRight /></button></div>
-            </form>
-            <div className="suggestions" aria-label="Example queries"><span>Try an example</span>{examples.map((example) => <button key={example} type="button" onClick={() => setQuery(example)}>{example}</button>)}</div>
+            <a className="primary-button hero-cta" href="/app">Explore the workspace <ArrowUpRight /></a>
           </div>
 
           <div className="hero-visual" aria-label="Orbis Labs collection preview">
@@ -76,16 +58,16 @@ function LandingPage() {
           <div className="principle-grid">
             <article><div className="number">01</div><h3>Source-first, always.</h3><p>Every record traces back to where it came from and when it was retrieved. No black-box lists. No made-up answers.</p><a href="#how-it-works">See our approach <ArrowUpRight /></a></article>
             <article><div className="number">02</div><h3>Structured by design.</h3><p>Messy, natural-language questions become clean, searchable datasets that your team can actually use.</p><a href="#how-it-works">Explore the workflow <ArrowUpRight /></a></article>
-            <article><div className="number">03</div><h3>Built for momentum.</h3><p>Go from “I wonder” to “we know” in minutes. Export, share, and make the next decision with confidence.</p><a href="#start">Start a collection <ArrowUpRight /></a></article>
+            <article><div className="number">03</div><h3>Built for momentum.</h3><p>Go from “I wonder” to “we know” in minutes. Export, share, and make the next decision with confidence.</p><a href="/app">Start a collection <ArrowUpRight /></a></article>
           </div>
         </section>
 
         <section className="workflow wrap" id="how-it-works">
-          <div className="workflow-panel"><div className="eyebrow"><span className="eyebrow-dot" /> From question to clarity</div><h2>A better way to<br /><span>find what matters.</span></h2><p>Orbis combines the flexibility of AI with the discipline of data engineering. Your question is just the beginning.</p><a className="text-link" href="#start">See it in action <ArrowUpRight /></a></div>
+          <div className="workflow-panel"><div className="eyebrow"><span className="eyebrow-dot" /> From question to clarity</div><h2>A better way to<br /><span>find what matters.</span></h2><p>Orbis combines the flexibility of AI with the discipline of data engineering. Your question is just the beginning.</p><a className="text-link" href="/app">See it in action <ArrowUpRight /></a></div>
           <div className="workflow-steps"><div><span>01</span><div><h3>Describe</h3><p>Say what you need in your own words. Orbis understands the intent behind the question.</p></div></div><div><span>02</span><div><h3>Discover</h3><p>We collect from permitted sources and show you exactly where every record came from.</p></div></div><div><span>03</span><div><h3>Decide</h3><p>Search, filter, validate, and export a dataset ready for the work ahead.</p></div></div></div>
         </section>
 
-        <section className="closing wrap" id="about"><div className="closing-mark"><Spark /></div><p className="eyebrow">The next insight is closer than you think</p><h2>Start with a question.</h2><a className="primary-button" href="#start">Build your first dataset <ArrowUpRight /></a></section>
+        <section className="closing wrap" id="about"><div className="closing-mark"><Spark /></div><p className="eyebrow">The next insight is closer than you think</p><h2>Start with a question.</h2><a className="primary-button" href="/app">Build your first dataset <ArrowUpRight /></a></section>
       </main>
       <footer className="footer wrap"><a className="brand" href="#top"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a><span>AI-powered data intelligence for the curious and the decisive.</span><span>© 2026 Orbis Labs</span></footer>
     </div>
