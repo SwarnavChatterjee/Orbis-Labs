@@ -187,7 +187,7 @@ function WorkspacePage() {
     <div className="workspace-shell">
       <header className="workspace-nav">
         <a className="brand" href="/" aria-label="Return to Orbis Labs home"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a>
-        <div className="workspace-nav-right">{userEmail ? <><span className="workspace-status"><span /> {userEmail}</span><span className="avatar">{userEmail.slice(0, 2).toUpperCase()}</span></> : <a className="google-login" href={GOOGLE_LOGIN_URL}>Continue with Google</a>}</div>
+        <div className="workspace-nav-right">{userEmail ? <><span className="workspace-status"><span /> {userEmail}</span><span className="avatar">{userEmail.slice(0, 2).toUpperCase()}</span></> : <span className="workspace-status"><span className="error-dot" /> Authentication required</span>}</div>
       </header>
       <div className="workspace-layout">
         <aside className="workspace-sidebar">
@@ -200,7 +200,7 @@ function WorkspacePage() {
           <div className="sidebar-footer"><div className="sidebar-card"><Spark /><div><strong>Source-backed by design</strong><small>Every record has a trail.</small></div></div><a className="sidebar-link" href="/"><span>←</span> Back to home</a></div>
         </aside>
         <main className="workspace-main">
-          {authLoading ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><h1>Checking your access…</h1><p>Orbis is verifying your Google session.</p></section> : !userEmail ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><div className="eyebrow"><span className="eyebrow-dot" /> Private workspace</div><h1>Sign in to continue.</h1><p>Use your Google account to enter the Orbis search workspace and manage your collections.</p><a className="primary-button" href={GOOGLE_LOGIN_URL}>Continue with Google <ArrowUpRight /></a><a className="back-home" href="/">← Back to landing page</a></section> : <>
+          {authLoading ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><h1>Checking your access…</h1><p>Orbis is verifying your Google session.</p></section> : !userEmail ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><div className="eyebrow"><span className="eyebrow-dot" /> Private workspace</div><h1>Sign in from the landing page.</h1><p>Return to the Orbis Labs landing page and use the Google sign-in button to enter this workspace.</p><a className="primary-button" href="/">Back to landing page <ArrowUpRight /></a></section> : <>
           <div className="workspace-heading"><div><div className="eyebrow"><span className="eyebrow-dot" /> Orbis workspace</div><h1>What are you looking for?</h1><p>Describe the dataset you need. Orbis will structure, search, and organize the signal.</p></div><div className="workspace-badge"><Spark /><span>AI-assisted<br /><strong>data discovery</strong></span></div></div>
           <form className="workspace-composer" onSubmit={submitWorkspaceQuery}>
             <div className="workspace-composer-top"><Spark /><textarea aria-label="Search for data" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="e.g. Find software engineering internships in India for 2027 graduates..." rows={3} /></div>
