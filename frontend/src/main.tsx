@@ -1,7 +1,8 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import { downloadCsv, getHistory, getQuery, getResults, QueryHistoryItem, QueryResult, QueryStatus, rerunQuery, streamQuery, submitQuery } from "./api";
 
 function ArrowUpRight() {
   return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 15 15 5M7 5h8v8" /></svg>;
@@ -78,10 +79,98 @@ function WorkspacePage() {
   const params = new URLSearchParams(window.location.search);
   const [query, setQuery] = useState(params.get("query") ?? "");
   const [activeQuery, setActiveQuery] = useState("");
+  const [queryId, setQueryId] = useState<string | null>(null);
+  const [status, setStatus] = useState<QueryStatus | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [results, setResults] = useState<QueryResult[]>([]);
+  const [history, setHistory] = useState<QueryHistoryItem[]>([]);
+  const [locationFilter, setLocationFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [confidenceFilter, setConfidenceFilter] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function submitWorkspaceQuery(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    getHistory().then((data) => setHistory(data.items)).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (!queryId) return;
+    return streamQuery(
+      queryId,
+      (event) => {
+        setStatus(event.status);
+        setStatusMessage(event.message);
+        if (event.status === "completed" || event.status === "failed") {
+          getResults(queryId, { location: locationFilter, role: roleFilter, minConfidence: confidenceFilter })
+            .then((data) => setResults(data.items))
+            .catch((reason: Error) => setError(reason.message));
+          getHistory().then((data) => setHistory(data.items)).catch(() => undefined);
+        }
+      },
+      () => undefined,
+      (reason) => setError(reason),
+    );
+  }, [queryId]);
+
+  async function loadQuery(item: QueryHistoryItem) {
+    setError(null);
+    setQuery(item.raw_text);
+    setActiveQuery(item.raw_text);
+    setQueryId(item.id);
+    setStatus(item.status);
+    try {
+      const details = await getQuery(item.id);
+      setStatus(details.status);
+      const data = await getResults(item.id, { location: locationFilter, role: roleFilter, minConfidence: confidenceFilter });
+      setResults(data.items);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to load this query.");
+    }
+  }
+
+  async function submitWorkspaceQuery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (query.trim()) setActiveQuery(query.trim());
+    if (!query.trim() || loading) return;
+    setLoading(true);
+    setError(null);
+    setResults([]);
+    try {
+      const accepted = await submitQuery(query.trim());
+      setQueryId(accepted.query_id);
+      setActiveQuery(query.trim());
+      setStatus("queued");
+      setStatusMessage("Your collection has been queued.");
+      getHistory().then((data) => setHistory(data.items)).catch(() => undefined);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to submit this query.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function applyFilters() {
+    if (!queryId) return;
+    try {
+      const data = await getResults(queryId, { location: locationFilter, role: roleFilter, minConfidence: confidenceFilter });
+      setResults(data.items);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to filter these results.");
+    }
+  }
+
+  async function startRerun() {
+    if (!queryId) return;
+    setError(null);
+    try {
+      const accepted = await rerunQuery(queryId);
+      setQueryId(accepted.query_id);
+      setStatus("queued");
+      setStatusMessage("A fresh collection has been queued.");
+      setResults([]);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to rerun this query.");
+    }
   }
 
   return (
@@ -92,22 +181,21 @@ function WorkspacePage() {
       </header>
       <div className="workspace-layout">
         <aside className="workspace-sidebar">
-          <button className="new-query" type="button" onClick={() => { setQuery(""); setActiveQuery(""); }}><span>+</span> New collection</button>
+          <button className="new-query" type="button" onClick={() => { setQuery(""); setActiveQuery(""); setQueryId(null); setStatus(null); setResults([]); setError(null); }}><span>+</span> New collection</button>
           <div className="sidebar-label">Workspace</div>
           <a className="sidebar-link active" href="/app"><span>⌕</span> Explore data</a>
           <a className="sidebar-link" href="#history"><span>◷</span> Query history</a>
           <div className="sidebar-label history-label">Recent queries</div>
-          <div className="recent-query"><span className="recent-dot" /><div><strong>Software internships</strong><small>Just now · Draft</small></div></div>
-          <div className="recent-query muted"><span className="recent-dot" /><div><strong>Product roles</strong><small>Yesterday · Completed</small></div></div>
+          {history.length === 0 ? <div className="history-empty">No collections yet.</div> : history.slice(0, 5).map((item) => <button className="recent-query recent-query-button" key={item.id} type="button" onClick={() => loadQuery(item)}><span className={`recent-dot ${item.status === "completed" ? "completed" : ""}`} /><div><strong>{item.raw_text}</strong><small>{item.status}</small></div></button>)}
           <div className="sidebar-footer"><div className="sidebar-card"><Spark /><div><strong>Source-backed by design</strong><small>Every record has a trail.</small></div></div><a className="sidebar-link" href="/"><span>←</span> Back to home</a></div>
         </aside>
         <main className="workspace-main">
           <div className="workspace-heading"><div><div className="eyebrow"><span className="eyebrow-dot" /> Orbis workspace</div><h1>What are you looking for?</h1><p>Describe the dataset you need. Orbis will structure, search, and organize the signal.</p></div><div className="workspace-badge"><Spark /><span>AI-assisted<br /><strong>data discovery</strong></span></div></div>
           <form className="workspace-composer" onSubmit={submitWorkspaceQuery}>
             <div className="workspace-composer-top"><Spark /><textarea aria-label="Search for data" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="e.g. Find software engineering internships in India for 2027 graduates..." rows={3} /></div>
-            <div className="workspace-composer-bottom"><div className="filter-pills"><button type="button">Internships <span>⌄</span></button><button type="button">Any location <span>⌄</span></button><button type="button">All sources <span>⌄</span></button></div><button className="primary-button" type="submit">{activeQuery ? "Run again" : "Start collection"}<ArrowUpRight /></button></div>
+            <div className="workspace-composer-bottom"><div className="filter-pills"><input aria-label="Filter by role" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} placeholder="Role" /><input aria-label="Filter by location" value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)} placeholder="Location" /><select aria-label="Minimum confidence" value={confidenceFilter} onChange={(event) => setConfidenceFilter(event.target.value)}><option value="">Any confidence</option><option value="0.8">80%+</option><option value="0.9">90%+</option></select>{queryId && <button className="filter-apply" type="button" onClick={applyFilters}>Apply filters</button>}</div><button className="primary-button" type="submit" disabled={loading}>{loading ? "Submitting…" : activeQuery ? "Run again" : "Start collection"}<ArrowUpRight /></button></div>
           </form>
-          {activeQuery ? <section className="workspace-active"><div className="active-header"><div><span className="live-dot" /> Ready to collect</div><span>Query understood</span></div><h2>{activeQuery}</h2><div className="active-grid"><div><small>Intent</small><strong>Internship search</strong></div><div><small>Sources</small><strong>2 permitted sources</strong></div><div><small>Output</small><strong>Structured records</strong></div></div><button className="text-link" type="button" onClick={() => setActiveQuery("")}>Edit query <ArrowUpRight /></button></section> : <section className="workspace-empty"><div className="empty-orb"><Spark /></div><h2>Your next dataset starts here.</h2><p>Ask a question above to begin a source-backed collection. You’ll see progress, provenance, and results in this workspace.</p><div className="empty-features"><span><Check /> Source verified</span><span><Check /> Structured output</span><span><Check /> Export ready</span></div></section>}
+          {activeQuery ? <><section className="workspace-active"><div className="active-header"><div><span className={`live-dot ${status === "failed" ? "error-dot" : ""}`} /> {status ?? "queued"}</div><span>{statusMessage ?? "Collection in progress"}</span></div><h2>{activeQuery}</h2><div className="active-grid"><div><small>Query status</small><strong>{status ?? "queued"}</strong></div><div><small>Sources</small><strong>Internshala + GitLab</strong></div><div><small>Records</small><strong>{results.length}</strong></div></div><div className="active-actions"><button className="text-link" type="button" onClick={() => setActiveQuery("")}>Edit query <ArrowUpRight /></button><button className="text-link" type="button" onClick={startRerun}>Rerun <ArrowUpRight /></button></div></section>{error && <div className="workspace-error">{error}</div>}{status === "completed" && <section className="results-panel"><div className="results-heading"><div><div className="eyebrow"><span className="eyebrow-dot" /> Collection results</div><h2>{results.length} records found</h2></div><button className="export-button" type="button" onClick={() => downloadCsv(results)} disabled={!results.length}>Export CSV <ArrowUpRight /></button></div>{results.length ? <div className="results-table-wrap"><table className="results-table"><thead><tr><th>Role</th><th>Company</th><th>Location</th><th>Source</th><th>Confidence</th></tr></thead><tbody>{results.map((result) => <tr key={result.id}><td><strong>{result.role}</strong><a href={result.source_url} target="_blank" rel="noreferrer">View source ↗</a></td><td>{result.company}</td><td>{result.location ?? "—"}</td><td><span className="source-tag">{result.source_name ?? "Unknown"}</span></td><td>{result.confidence == null ? "—" : `${Math.round(result.confidence * 100)}%`}</td></tr>)}</tbody></table></div> : <div className="results-empty">No records matched this query or its filters.</div>}</section>}</> : <section className="workspace-empty"><div className="empty-orb"><Spark /></div><h2>Your next dataset starts here.</h2><p>Ask a question above to begin a source-backed collection. You’ll see progress, provenance, and results in this workspace.</p><div className="empty-features"><span><Check /> Source verified</span><span><Check /> Structured output</span><span><Check /> Export ready</span></div></section>}
         </main>
       </div>
     </div>
