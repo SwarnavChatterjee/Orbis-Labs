@@ -24,6 +24,8 @@ export type QueryResult = {
   validation_errors: string[];
 };
 
+export type AuthUser = { id: string; email: string; display_name: string | null };
+
 type Envelope<T> = { success: true; data: T } | { success: false; error: string };
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -39,6 +41,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export function submitQuery(rawText: string) {
   return request<{ query_id: string }>("/queries", { method: "POST", body: JSON.stringify({ raw_text: rawText }) });
+}
+
+export function getCurrentUser() {
+  return request<AuthUser>("/auth/me");
 }
 
 export function getQuery(queryId: string) {
