@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://orbis:orbis@localhost:5432/orbis_labs"
     openai_api_key: str | None = None
     openai_model: str = "gpt-6-astra"
+    demo_mode: bool = False
     google_client_id: str | None = None
     google_client_secret: str | None = None
     google_redirect_uri: str = "http://localhost:8000/api/auth/google/callback"

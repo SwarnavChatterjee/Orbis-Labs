@@ -43,6 +43,7 @@ class CollectorRegistry:
 
 
 SOURCE_REGISTRY = CollectorRegistry()
+DEMO_REGISTRY = CollectorRegistry()
 
 
 def register_collector(source: SourceDescriptor, collector: Collector) -> None:
@@ -89,4 +90,12 @@ def register_default_collectors() -> None:
     )
 
 
+def register_demo_collectors() -> None:
+    from app.collectors.demo import collect_demo
+
+    for source in SOURCE_REGISTRY.descriptors():
+        DEMO_REGISTRY.register(source, collect_demo)
+
+
 register_default_collectors()
+register_demo_collectors()

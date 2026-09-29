@@ -17,6 +17,7 @@ class User(SQLModel, table=True):
     email: str = Field(index=True, unique=True)
     google_subject: str | None = Field(default=None, index=True, unique=True)
     display_name: str | None = None
+    avatar_url: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
 

@@ -3,6 +3,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import { downloadCsv, getCurrentUser, getHistory, getQuery, getResults, GOOGLE_LOGIN_URL, QueryHistoryItem, QueryResult, QueryStatus, rerunQuery, streamQuery, submitQuery } from "./api";
+import { logout } from "./api";
 
 function ArrowUpRight() {
   return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 15 15 5M7 5h8v8" /></svg>;
@@ -14,6 +15,14 @@ function Spark() {
 
 function Check() {
   return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8" /></svg>;
+}
+
+function ProfileAvatar({ email, avatarUrl }: { email: string; avatarUrl: string | null }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const initials = email.slice(0, 2).toUpperCase();
+  return avatarUrl && !imageFailed
+    ? <img className="avatar avatar-image" src={avatarUrl} alt="Google profile" onError={() => setImageFailed(true)} />
+    : <span className="avatar" aria-label="Profile initials">{initials}</span>;
 }
 
 const suggestedQueries = [
@@ -29,7 +38,7 @@ function LandingPage() {
       <header className="nav wrap">
         <a className="brand" href="#top" aria-label="Orbis Labs home"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a>
         <nav className="nav-links" aria-label="Primary navigation"><a href="#how-it-works">How it works</a><a href="#principles">Why Orbis</a><a href="#about">About</a></nav>
-        <a className="nav-cta" href={GOOGLE_LOGIN_URL}>Sign in with Google <ArrowUpRight /></a>
+        <a className="google-button" href={GOOGLE_LOGIN_URL} aria-label="Sign in with Google"><img src="/google-signin.svg" alt="Sign in with Google" /></a>
       </header>
 
       <main id="top">
@@ -38,7 +47,7 @@ function LandingPage() {
             <div className="eyebrow"><span className="eyebrow-dot" /> Intelligence for the real world</div>
             <h1>Ask for the data.<br /><span>Get the signal.</span></h1>
             <p className="hero-intro">Orbis Labs turns plain-language questions into clean, source-backed datasets—so you can move from curiosity to confident action.</p>
-            <a className="primary-button hero-cta" href={GOOGLE_LOGIN_URL}>Continue with Google <ArrowUpRight /></a>
+            <a className="google-button hero-cta" href={GOOGLE_LOGIN_URL} aria-label="Sign in with Google"><img src="/google-signin.svg" alt="Sign in with Google" /></a>
           </div>
 
           <div className="hero-visual" aria-label="Orbis Labs collection preview">
@@ -96,19 +105,25 @@ function WorkspacePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [user, setUser] = useState<{ email: string; avatar_url: string | null } | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     getCurrentUser()
-      .then((user) => setUserEmail(user.email))
-      .catch(() => setUserEmail(null))
+      .then((currentUser) => setUser(currentUser))
+      .catch(() => setUser(null))
       .finally(() => setAuthLoading(false));
   }, []);
 
   useEffect(() => {
-    if (!userEmail) return;
+    if (!user) return;
     getHistory().then((data) => setHistory(data.items)).catch(() => undefined);
-  }, [userEmail]);
+  }, [user]);
+
+  async function signOut() {
+    await logout().catch(() => undefined);
+    window.location.href = "/";
+  }
 
   useEffect(() => {
     if (!queryId) return;
@@ -145,9 +160,12 @@ function WorkspacePage() {
     }
   }
 
-  async function submitWorkspaceQuery(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!query.trim() || loading) return;
+  async function runWorkspaceQuery() {
+    if (loading) return;
+    if (!query.trim()) {
+      setError("Describe what you want Orbis to collect before starting.");
+      return;
+    }
     setLoading(true);
     setError(null);
     setResults([]);
@@ -163,6 +181,11 @@ function WorkspacePage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function submitWorkspaceQuery(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void runWorkspaceQuery();
   }
 
   async function applyFilters() {
@@ -193,7 +216,7 @@ function WorkspacePage() {
     <div className="workspace-shell">
       <header className="workspace-nav">
         <a className="brand" href="/" aria-label="Return to Orbis Labs home"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a>
-        <div className="workspace-nav-right">{userEmail ? <><span className="workspace-status"><span /> {userEmail}</span><span className="avatar">{userEmail.slice(0, 2).toUpperCase()}</span></> : <span className="workspace-status"><span className="error-dot" /> Authentication required</span>}</div>
+        <div className="workspace-nav-right">{user ? <><span className="workspace-status"><span /> {user.email}</span><div className="profile-control"><button className="profile-trigger" type="button" aria-label="Open profile menu" aria-expanded={profileOpen} onClick={() => setProfileOpen((open) => !open)}><ProfileAvatar email={user.email} avatarUrl={user.avatar_url} /><span className={`profile-chevron ${profileOpen ? "open" : ""}`}>⌄</span></button>{profileOpen && <div className="profile-menu"><div className="profile-menu-identity"><ProfileAvatar email={user.email} avatarUrl={user.avatar_url} /><div><strong>{user.email}</strong><small>Google account</small></div></div><button className="logout-button" type="button" onClick={signOut}>Log out</button></div>}</div></> : <span className="workspace-status"><span className="error-dot" /> Authentication required</span>}</div>
       </header>
       <div className="workspace-layout">
         <aside className="workspace-sidebar">
@@ -206,13 +229,14 @@ function WorkspacePage() {
           <div className="sidebar-footer"><div className="sidebar-card"><Spark /><div><strong>Source-backed by design</strong><small>Every record has a trail.</small></div></div><a className="sidebar-link" href="/"><span>←</span> Back to home</a></div>
         </aside>
         <main className="workspace-main">
-          {authLoading ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><h1>Checking your access…</h1><p>Orbis is verifying your Google session.</p></section> : !userEmail ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><div className="eyebrow"><span className="eyebrow-dot" /> Private workspace</div><h1>Sign in from the landing page.</h1><p>Return to the Orbis Labs landing page and use the Google sign-in button to enter this workspace.</p><a className="primary-button" href="/">Back to landing page <ArrowUpRight /></a></section> : <>
+          {authLoading ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><h1>Checking your access…</h1><p>Orbis is verifying your Google session.</p></section> : !user ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><div className="eyebrow"><span className="eyebrow-dot" /> Private workspace</div><h1>Sign in from the landing page.</h1><p>Return to the Orbis Labs landing page and use the Google sign-in button to enter this workspace.</p><a className="primary-button" href="/">Back to landing page <ArrowUpRight /></a></section> : <>
           <div className="workspace-heading"><div><div className="eyebrow"><span className="eyebrow-dot" /> Orbis workspace</div><h1>What are you looking for?</h1><p>Describe the dataset you need. Orbis will structure, search, and organize the signal.</p></div><div className="workspace-badge"><Spark /><span>AI-assisted<br /><strong>data discovery</strong></span></div></div>
           <form className="workspace-composer" onSubmit={submitWorkspaceQuery}>
             <div className="workspace-composer-top"><Spark /><textarea aria-label="Search for data" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="e.g. Find software engineering internships in India for 2027 graduates..." rows={3} /></div>
-            <div className="workspace-composer-bottom"><div className="filter-pills"><input aria-label="Filter by role" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} placeholder="Role" /><input aria-label="Filter by location" value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)} placeholder="Location" /><select aria-label="Minimum confidence" value={confidenceFilter} onChange={(event) => setConfidenceFilter(event.target.value)}><option value="">Any confidence</option><option value="0.8">80%+</option><option value="0.9">90%+</option></select>{queryId && <button className="filter-apply" type="button" onClick={applyFilters}>Apply filters</button>}</div><button className="primary-button" type="submit" disabled={loading}>{loading ? "Submitting…" : activeQuery ? "Run again" : "Start collection"}<ArrowUpRight /></button></div>
+            <div className="workspace-composer-bottom"><div className="filter-pills"><input aria-label="Filter by role" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} placeholder="Role" /><input aria-label="Filter by location" value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)} placeholder="Location" /><select aria-label="Minimum confidence" value={confidenceFilter} onChange={(event) => setConfidenceFilter(event.target.value)}><option value="">Any confidence</option><option value="0.8">80%+</option><option value="0.9">90%+</option></select>{queryId && <button className="filter-apply" type="button" onClick={applyFilters}>Apply filters</button>}</div><button className="primary-button" type="button" onClick={() => void runWorkspaceQuery()} disabled={loading}>{loading ? "Submitting…" : activeQuery ? "Run again" : "Start collection"}<ArrowUpRight /></button></div>
           </form>
           <div className="suggested-queries" aria-label="Suggested example queries"><span>Try a suggestion</span>{suggestedQueries.map((suggestion) => <button key={suggestion} type="button" onClick={() => setQuery(suggestion)}>{suggestion}</button>)}</div>
+          {error && !activeQuery && <div className="workspace-error">{error}</div>}
           {activeQuery ? <><section className="workspace-active"><div className="active-header"><div><span className={`live-dot ${status === "failed" ? "error-dot" : ""}`} /> {status ?? "queued"}</div><span>{statusMessage ?? "Collection in progress"}</span></div><h2>{activeQuery}</h2><div className="active-grid"><div><small>Query status</small><strong>{status ?? "queued"}</strong></div><div><small>Sources</small><strong>Internshala + GitLab</strong></div><div><small>Records</small><strong>{results.length}</strong></div></div><div className="active-actions"><button className="text-link" type="button" onClick={() => setActiveQuery("")}>Edit query <ArrowUpRight /></button><button className="text-link" type="button" onClick={startRerun}>Rerun <ArrowUpRight /></button></div></section>{error && <div className="workspace-error">{error}</div>}{status === "completed" && <section className="results-panel"><div className="results-heading"><div><div className="eyebrow"><span className="eyebrow-dot" /> Collection results</div><h2>{results.length} records found</h2></div><button className="export-button" type="button" onClick={() => downloadCsv(results)} disabled={!results.length}>Export CSV <ArrowUpRight /></button></div>{results.length ? <div className="results-table-wrap"><table className="results-table"><thead><tr><th>Role</th><th>Company</th><th>Location</th><th>Source</th><th>Confidence</th></tr></thead><tbody>{results.map((result) => <tr key={result.id}><td><strong>{result.role}</strong><a href={result.source_url} target="_blank" rel="noreferrer">View source ↗</a></td><td>{result.company}</td><td>{result.location ?? "—"}</td><td><span className="source-tag">{result.source_name ?? "Unknown"}</span></td><td>{result.confidence == null ? "—" : `${Math.round(result.confidence * 100)}%`}</td></tr>)}</tbody></table></div> : <div className="results-empty">No records matched this query or its filters.</div>}</section>}</> : <section className="workspace-empty"><div className="empty-orb"><Spark /></div><h2>Your next dataset starts here.</h2><p>Ask a question above to begin a source-backed collection. You’ll see progress, provenance, and results in this workspace.</p><div className="empty-features"><span><Check /> Source verified</span><span><Check /> Structured output</span><span><Check /> Export ready</span></div></section>}
           </>}
         </main>

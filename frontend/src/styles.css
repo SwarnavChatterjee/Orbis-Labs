@@ -25,8 +25,25 @@ h1, h2, h3, p { margin-top: 0; } h1 { max-width: 700px; margin: 28px 0 25px; col
 .workspace-nav { height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 1px solid rgba(176,207,195,.1); background: rgba(8,17,15,.94); }
 .workspace-nav-right { display: flex; align-items: center; gap: 20px; color: #789188; font-family: 'DM Mono', monospace; font-size: .6rem; }
 .google-login { padding: 8px 11px; border: 1px solid rgba(216,170,100,.4); border-radius: 7px; color: #e0b36c; font-family: 'Manrope', sans-serif; font-size: .66rem; font-weight: 700; }
+.google-mark { width: 15px; height: 15px; flex: 0 0 auto; }
+.google-button { display: inline-flex; width: 180px; height: 40px; border-radius: 4px; overflow: hidden; transition: box-shadow .2s, transform .2s; }
+.google-button img { display: block; width: 180px; height: 40px; }
+.google-button:hover { box-shadow: 0 2px 5px rgba(0,0,0,.2); transform: translateY(-1px); }
 .workspace-status { display: flex; align-items: center; gap: 8px; }.workspace-status > span { width: 6px; height: 6px; border-radius: 50%; background: #6dd39a; box-shadow: 0 0 0 4px rgba(109,211,154,.1); }
 .avatar { display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid rgba(143,190,171,.25); border-radius: 50%; color: #d3e8dd; background: #153028; font-family: 'Manrope', sans-serif; font-size: .63rem; font-weight: 800; }
+.avatar-image { display: block; object-fit: cover; }
+.profile-control { position: relative; }
+.profile-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; color: #94aaa1; background: transparent; cursor: pointer; }
+.profile-trigger:hover .avatar, .profile-trigger:focus-visible .avatar { border-color: rgba(216,170,100,.8); }
+.profile-chevron { font-size: .85rem; line-height: 1; transition: transform .2s; }
+.profile-chevron.open { transform: rotate(180deg); }
+.profile-menu { position: absolute; z-index: 20; top: calc(100% + 12px); right: 0; display: grid; gap: 14px; width: 245px; padding: 14px; border: 1px solid rgba(143,190,171,.2); border-radius: 11px; background: #10221d; box-shadow: 0 18px 38px rgba(0,0,0,.35); }
+.profile-menu-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.profile-menu-identity > div { display: grid; gap: 4px; min-width: 0; }
+.profile-menu-identity strong { overflow: hidden; color: #e5efe9; font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
+.profile-menu-identity small { color: #7e998e; font: .55rem 'DM Mono', monospace; }
+.logout-button { width: 100%; padding: 9px 11px; border: 1px solid rgba(143,190,171,.2); border-radius: 7px; color: #9ab2a8; background: transparent; font: 600 .62rem 'Manrope', sans-serif; cursor: pointer; transition: border-color .2s, color .2s, background .2s; }
+.logout-button:hover { border-color: rgba(216,170,100,.5); color: #e0b36c; background: rgba(216,170,100,.06); }
 .workspace-layout { display: grid; grid-template-columns: 235px 1fr; min-height: calc(100vh - 72px); }
 .workspace-sidebar { display: flex; flex-direction: column; padding: 27px 16px; border-right: 1px solid rgba(176,207,195,.1); background: #0a1613; }
 .new-query { display: flex; align-items: center; gap: 9px; margin-bottom: 33px; padding: 11px 13px; border: 1px solid rgba(216,170,100,.45); border-radius: 8px; color: #e5ba75; background: rgba(216,170,100,.06); font-size: .7rem; font-weight: 800; cursor: pointer; }.new-query span { font-size: 1.1rem; line-height: .7; }

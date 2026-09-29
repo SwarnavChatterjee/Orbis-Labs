@@ -11,7 +11,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.collectors.registry import SOURCE_REGISTRY, CollectorRegistry
+from app.collectors.registry import DEMO_REGISTRY, SOURCE_REGISTRY, CollectorRegistry
 from app.core.database import SessionFactory
 from app.core.config import settings
 from app.models.db import QueryEvent, QueryRecord, RecordRow, Source, utc_now
@@ -38,6 +38,13 @@ class OpenAIQueryPlanner:
     """Default planner adapter; prompt and provider logic stay in the parser."""
 
     def parse(self, raw_text: str) -> QueryPlan:
+        if settings.demo_mode and not settings.openai_api_key:
+            return QueryPlan(
+                intent="internship_search",
+                filters={"location": "India" if "india" in raw_text.lower() else None},
+                required_fields=["company", "role", "location", "source_url"],
+                target_count=20,
+            )
         from app.llm.parser import parse_query
 
         return parse_query(raw_text)
@@ -71,7 +78,7 @@ async def process_query(
     query_id: UUID,
     session_factory: async_sessionmaker[AsyncSession] = SessionFactory,
     parser: QueryPlanner | Callable[[str], QueryPlan | Awaitable[QueryPlan]] | None = None,
-    collector_registry: CollectorRegistry = SOURCE_REGISTRY,
+    collector_registry: CollectorRegistry | None = None,
     worker_retry: bool = False,
     final_attempt: bool = True,
 ) -> None:
@@ -109,7 +116,8 @@ async def process_query(
                 "The query planner could not complete the request. Please retry."
             ) from exc
 
-        descriptors = collector_registry.route(plan.intent, plan.filters.role)
+        active_registry = collector_registry or (DEMO_REGISTRY if settings.demo_mode else SOURCE_REGISTRY)
+        descriptors = active_registry.route(plan.intent, plan.filters.role)
         plan.sources = [source.id for source in descriptors]
         async with session_factory() as session:
             query = await session.get(QueryRecord, query_id)
@@ -127,7 +135,7 @@ async def process_query(
                 await _record_transition(session, query, "collecting")
 
             for descriptor in descriptors:
-                registered = collector_registry.get(descriptor.id)
+                registered = active_registry.get(descriptor.id)
                 if registered is None:
                     continue
                 _, collector = registered
@@ -200,7 +208,12 @@ async def process_query(
         async with session_factory() as session:
             query = await session.get(QueryRecord, query_id)
             if query is not None:
-                message = "No registered collectors matched this query." if not descriptors else None
+                if not descriptors:
+                    message = "No registered collectors matched this query."
+                elif settings.demo_mode and not settings.openai_api_key:
+                    message = "Demo data loaded. Add OPENAI_API_KEY for live collection."
+                else:
+                    message = None
                 await _record_transition(session, query, "completed", message)
     except PlannerError as exc:
         logger.error(
@@ -254,7 +267,12 @@ else:
 async def enqueue_query(query_id: UUID) -> None:
     if process_query_job is None:
         raise RuntimeError("Procrastinate is not installed; durable queue is unavailable")
-    await process_query_job.defer_async(query_id=str(query_id))
+    # The worker CLI opens the Procrastinate app for its entire lifetime, but
+    # the API process only needs a short-lived producer connection when it
+    # accepts a query. Without this context, defer_async raises AppNotOpen and
+    # every otherwise-valid submission is returned as HTTP 503.
+    async with procrastinate_app.open_async():
+        await process_query_job.defer_async(query_id=str(query_id))
 
 
 async def run_worker() -> None:

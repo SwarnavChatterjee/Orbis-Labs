@@ -24,7 +24,7 @@ export type QueryResult = {
   validation_errors: string[];
 };
 
-export type AuthUser = { id: string; email: string; display_name: string | null };
+export type AuthUser = { id: string; email: string; display_name: string | null; avatar_url: string | null };
 
 type Envelope<T> = { success: true; data: T } | { success: false; error: string };
 
@@ -45,6 +45,10 @@ export function submitQuery(rawText: string) {
 
 export function getCurrentUser() {
   return request<AuthUser>("/auth/me");
+}
+
+export function logout() {
+  return request<{ success: true }>("/auth/logout", { method: "POST" });
 }
 
 export function getQuery(queryId: string) {
@@ -69,15 +73,22 @@ export function rerunQuery(queryId: string) {
 
 export function streamQuery(queryId: string, onEvent: (event: { status: QueryStatus; message: string | null }) => void, onDone: () => void, onError: (error: string) => void) {
   const stream = new EventSource(`${API_BASE}/queries/${queryId}/stream`, { withCredentials: true });
+  let terminal = false;
   stream.addEventListener("status", (event) => {
     try {
-      onEvent(JSON.parse((event as MessageEvent).data));
+      const payload = JSON.parse((event as MessageEvent).data) as { status: QueryStatus; message: string | null };
+      onEvent(payload);
+      if (payload.status === "completed" || payload.status === "failed") {
+        terminal = true;
+        stream.close();
+        onDone();
+      }
     } catch {
       onError("The progress stream returned an invalid event.");
     }
   });
   stream.onerror = () => {
-    if (stream.readyState === EventSource.CLOSED) onDone();
+    if (terminal || stream.readyState === EventSource.CLOSED) onDone();
     else onError("The progress stream disconnected.");
     stream.close();
   };

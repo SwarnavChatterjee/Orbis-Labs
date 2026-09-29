@@ -68,6 +68,7 @@ async def google_callback(request: Request) -> RedirectResponse:
         else:
             user.google_subject = subject
             user.display_name = userinfo.get("name") or user.display_name
+        user.avatar_url = userinfo.get("picture") or user.avatar_url
         await session.commit()
         await session.refresh(user)
 
@@ -88,7 +89,14 @@ async def current_user(request: Request) -> ApiSuccess:
         user = await session.get(User, user_uuid)
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication required")
-    return ApiSuccess(data={"id": str(user.id), "email": user.email, "display_name": user.display_name})
+    return ApiSuccess(
+        data={
+            "id": str(user.id),
+            "email": user.email,
+            "display_name": user.display_name,
+            "avatar_url": user.avatar_url,
+        }
+    )
 
 
 @router.post("/logout")
