@@ -35,6 +35,7 @@ Implemented:
 
 - Shared Pydantic contracts
 - OpenAI parser boundary
+- Google OpenID Connect authentication boundary
 - Source registry and routing
 - SQLModel database models
 - Alembic initial migration
@@ -77,6 +78,12 @@ Set `OPENAI_API_KEY` in the backend environment before submitting a query. The
 planner reads `OPENAI_MODEL` from the same environment; it defaults to the
 model configured in `backend/app/core/config.py`. Keep credentials out of the
 frontend, source control, logs, and checked-in evaluation fixtures.
+
+Google sign-in uses the server-side authorization-code flow. Create a Web
+application OAuth client in Google Cloud Console and add this redirect URI:
+`http://localhost:8000/api/auth/google/callback`. Configure `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `SESSION_SECRET`, and
+`FRONTEND_URL` in `.env`. Never commit the client secret or session secret.
 
 Run the mock-only parser tests with `PYTHONPATH=backend pytest backend/tests -q`.
 With a locally configured API key, run the 16-query semantic evaluation with

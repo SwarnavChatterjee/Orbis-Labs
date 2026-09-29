@@ -2,10 +2,12 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.routes.queries import router as queries_router
+from app.auth.google import router as auth_router
 from app.core.config import settings
 
 
@@ -15,13 +17,20 @@ app = FastAPI(
     description="Source-backed AI data intelligence for Orbis Labs.",
 )
 app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.session_secret,
+    same_site="lax",
+    https_only=settings.environment == "production",
+)
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 app.include_router(queries_router)
+app.include_router(auth_router)
 
 
 @app.exception_handler(StarletteHTTPException)

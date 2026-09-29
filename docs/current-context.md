@@ -36,6 +36,7 @@ The baseline `main` branch has been pushed to GitHub. The working tree was clean
 - SQLModel tables in `backend/app/models/db.py`
 - Async database session in `backend/app/core/database.py`
 - OpenAI parser in `backend/app/llm/parser.py`
+- Google OIDC authentication routes in `backend/app/auth/google.py`
 - Source registry in `backend/app/collectors/registry.py`
 - Approved collectors in `backend/app/collectors/internshala.py` and
   `backend/app/collectors/greenhouse.py`, with fixture coverage
@@ -54,6 +55,7 @@ postgresql+asyncpg://orbis:orbis@localhost:5433/orbis_labs
 ```
 
 - Initial Alembic migration applied locally
+- Google identity migration `0003_google_identity.py` added; live application is pending Docker startup
 - `pgcrypto` and `pg_trgm` extensions included
 
 ### Frontend
@@ -85,6 +87,7 @@ The test suite uses isolated SQLite databases for repeatable tests. PostgreSQL i
 ## Not yet complete
 
 - Live OpenAI smoke test with a real API key
+- Google Cloud OAuth credentials and live callback smoke test
 - Live-source validation and compliance checks
 - Deterministic confidence scoring
 - SSE progress implementation

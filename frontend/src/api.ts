@@ -1,4 +1,5 @@
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api").replace(/\/$/, "");
+export const GOOGLE_LOGIN_URL = `${API_BASE}/auth/google/login`;
 
 export type QueryStatus = "queued" | "running" | "planned" | "collecting" | "cleaning" | "completed" | "failed";
 
@@ -28,6 +29,7 @@ type Envelope<T> = { success: true; data: T } | { success: false; error: string 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
+    credentials: "include",
     headers: { "Content-Type": "application/json", ...(options?.headers ?? {}) },
   });
   const body = (await response.json()) as Envelope<T>;
@@ -60,7 +62,7 @@ export function rerunQuery(queryId: string) {
 }
 
 export function streamQuery(queryId: string, onEvent: (event: { status: QueryStatus; message: string | null }) => void, onDone: () => void, onError: (error: string) => void) {
-  const stream = new EventSource(`${API_BASE}/queries/${queryId}/stream`);
+  const stream = new EventSource(`${API_BASE}/queries/${queryId}/stream`, { withCredentials: true });
   stream.addEventListener("status", (event) => {
     try {
       onEvent(JSON.parse((event as MessageEvent).data));

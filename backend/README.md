@@ -20,6 +20,11 @@ PYTHONPATH=backend procrastinate -a app.jobs.tasks.procrastinate_app schema --ap
 PYTHONPATH=backend procrastinate -a app.jobs.tasks.procrastinate_app worker queries
 ```
 
+Google authentication requires the `0003_google_identity` migration and these
+local environment variables: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
+`GOOGLE_REDIRECT_URI`, `SESSION_SECRET`, and `FRONTEND_URL`. The callback URI
+must exactly match the Web OAuth client configuration in Google Cloud Console.
+
 Only explicitly registered collectors are eligible for source routing. The
 default registry contains the two approved MVP sources: Internshala and
 GitLab's Greenhouse job board. Collectors are sync or async callables receiving

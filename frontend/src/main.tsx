@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
-import { downloadCsv, getHistory, getQuery, getResults, QueryHistoryItem, QueryResult, QueryStatus, rerunQuery, streamQuery, submitQuery } from "./api";
+import { downloadCsv, getHistory, getQuery, getResults, GOOGLE_LOGIN_URL, QueryHistoryItem, QueryResult, QueryStatus, rerunQuery, streamQuery, submitQuery } from "./api";
 
 function ArrowUpRight() {
   return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 15 15 5M7 5h8v8" /></svg>;
@@ -177,7 +177,7 @@ function WorkspacePage() {
     <div className="workspace-shell">
       <header className="workspace-nav">
         <a className="brand" href="/" aria-label="Return to Orbis Labs home"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a>
-        <div className="workspace-nav-right"><span className="workspace-status"><span /> Workspace ready</span><span className="avatar">SC</span></div>
+        <div className="workspace-nav-right"><span className="workspace-status"><span /> Workspace ready</span><a className="google-login" href={GOOGLE_LOGIN_URL}>Continue with Google</a><span className="avatar">SC</span></div>
       </header>
       <div className="workspace-layout">
         <aside className="workspace-sidebar">

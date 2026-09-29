@@ -15,6 +15,8 @@ class User(SQLModel, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     email: str = Field(index=True, unique=True)
+    google_subject: str | None = Field(default=None, index=True, unique=True)
+    display_name: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
 

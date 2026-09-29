@@ -24,6 +24,7 @@ h1, h2, h3, p { margin-top: 0; } h1 { max-width: 700px; margin: 28px 0 25px; col
 .workspace-shell { min-height: 100vh; color: #e8f1ec; background: #08110f; }
 .workspace-nav { height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 1px solid rgba(176,207,195,.1); background: rgba(8,17,15,.94); }
 .workspace-nav-right { display: flex; align-items: center; gap: 20px; color: #789188; font-family: 'DM Mono', monospace; font-size: .6rem; }
+.google-login { padding: 8px 11px; border: 1px solid rgba(216,170,100,.4); border-radius: 7px; color: #e0b36c; font-family: 'Manrope', sans-serif; font-size: .66rem; font-weight: 700; }
 .workspace-status { display: flex; align-items: center; gap: 8px; }.workspace-status > span { width: 6px; height: 6px; border-radius: 50%; background: #6dd39a; box-shadow: 0 0 0 4px rgba(109,211,154,.1); }
 .avatar { display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid rgba(143,190,171,.25); border-radius: 50%; color: #d3e8dd; background: #153028; font-family: 'Manrope', sans-serif; font-size: .63rem; font-weight: 800; }
 .workspace-layout { display: grid; grid-template-columns: 235px 1fr; min-height: calc(100vh - 72px); }
