@@ -22,7 +22,10 @@ def test_registry_routes_only_registered_sources() -> None:
     assert [item.id for item in sources] == ["fixture_source"]
 
 
-def test_default_registry_does_not_select_unapproved_sources() -> None:
+def test_default_registry_selects_only_the_approved_sources() -> None:
     from app.collectors.registry import route_sources
 
-    assert route_sources("internship_search") == []
+    assert [source.id for source in route_sources("internship_search")] == [
+        "internshala",
+        "gitlab_greenhouse",
+    ]

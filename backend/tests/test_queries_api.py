@@ -72,7 +72,12 @@ def test_query_submission_and_status() -> None:
             rerun_id = rerun.json()["data"]["query_id"]
             assert rerun_id != query_id
             assert client.get(f"/api/queries/{query_id}").json()["data"]["status"] == "queued"
-            assert client.get("/api/sources").json() == {"success": True, "data": []}
+            sources = client.get("/api/sources").json()
+            assert sources["success"] is True
+            assert [source["id"] for source in sources["data"]] == [
+                "internshala",
+                "gitlab_greenhouse",
+            ]
 
             missing = client.get(f"/api/queries/{UUID(int=0)}")
             assert missing.status_code == 404

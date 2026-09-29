@@ -17,6 +17,8 @@ from app.core.config import settings
 from app.models.db import QueryEvent, QueryRecord, RecordRow, Source, utc_now
 from app.llm.parser import PlannerError, PlannerTransportError
 from app.models.schemas import QueryPlan
+from app.processing.clean import clean_records
+from app.processing.dedup import deduplicate_records
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +138,15 @@ async def process_query(
                 if inspect.isawaitable(records):
                     records = await records
                 collected.extend((descriptor, record) for record in records)
+
+            cleaned = clean_records([record for _, record in collected])
+            deduplicated = deduplicate_records(cleaned)
+            records_by_url = {str(record.source_url): record for record in deduplicated}
+            collected = [
+                (descriptor, records_by_url[str(record.source_url)])
+                for descriptor, record in collected
+                if str(record.source_url) in records_by_url
+            ]
 
             async with session_factory() as session:
                 query = await session.get(QueryRecord, query_id)

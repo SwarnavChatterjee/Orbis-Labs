@@ -1,8 +1,4 @@
-"""Registry-backed source routing and collector injection.
-
-The initial registry is intentionally empty until the project owner finalizes
-the supported sources. Tests and deployments register approved collectors.
-"""
+"""Registry-backed source routing and approved collector registration."""
 
 from collections.abc import Awaitable, Iterable
 from typing import Protocol
@@ -57,3 +53,40 @@ def route_sources(intent: str, role: str | None = None) -> list[SourceDescriptor
     """Select only sources with registered, approved collector functions."""
 
     return SOURCE_REGISTRY.route(intent, role)
+
+
+def register_default_collectors() -> None:
+    from app.collectors.greenhouse import collect_greenhouse
+    from app.collectors.internshala import collect_internshala
+
+    SOURCE_REGISTRY.register(
+        SourceDescriptor(
+            id="internshala",
+            name="Internshala",
+            kind="scrape",
+            handles=["internship_search", "internship", "job_search", "job"],
+            collector="app.collectors.internshala.collect_internshala",
+            config={
+                "base_url": "https://internshala.com",
+                "search_url": "https://internshala.com/internships/",
+            },
+        ),
+        collect_internshala,
+    )
+    SOURCE_REGISTRY.register(
+        SourceDescriptor(
+            id="gitlab_greenhouse",
+            name="GitLab",
+            kind="api",
+            handles=["internship_search", "internship", "job_search", "job"],
+            collector="app.collectors.greenhouse.collect_greenhouse",
+            config={
+                "board_token": "gitlab",
+                "jobs_url": "https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true",
+            },
+        ),
+        collect_greenhouse,
+    )
+
+
+register_default_collectors()

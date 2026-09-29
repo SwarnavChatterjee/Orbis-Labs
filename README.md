@@ -39,15 +39,14 @@ Implemented:
 - SQLModel database models
 - Alembic initial migration
 - Query submission, status, history, and results endpoints
+- Internshala and GitLab Greenhouse collector boundaries with fixtures
+- Deterministic record cleaning and deduplication
 - React frontend shell
 - Automated backend tests and frontend build
 
 Next:
 
-- Durable background worker
-- GitLab Greenhouse collector
-- Internshala collector
-- Cleaning and deduplication pipeline
+- Live-source collector validation and rate-limit/robots review
 - Frontend API integration, SSE progress, and CSV export
 
 ## Documentation

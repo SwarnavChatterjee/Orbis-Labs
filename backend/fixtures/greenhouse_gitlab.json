@@ -1,0 +1,18 @@
+{
+  "jobs": [
+    {
+      "id": 1001,
+      "title": "Software Engineer Intern",
+      "location": {"name": "Remote - United States"},
+      "absolute_url": "https://boards.greenhouse.io/gitlab/jobs/1001",
+      "updated_at": "2026-09-28T12:00:00Z"
+    },
+    {
+      "id": 1002,
+      "title": "Backend Engineer",
+      "location": {"name": "Bangalore, India"},
+      "absolute_url": "https://boards.greenhouse.io/gitlab/jobs/1002",
+      "updated_at": "2026-09-27T12:00:00Z"
+    }
+  ]
+}

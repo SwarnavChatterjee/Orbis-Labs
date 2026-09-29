@@ -23,11 +23,10 @@
 
 ### Phase 3: source collectors
 
-1. Build the GitLab Greenhouse API collector.
-2. Save representative API fixtures.
-3. Build the Internshala collector against fixtures.
-4. Add robots.txt and request compliance checks.
-5. Validate both collectors against live sources.
+1. Validate the GitLab Greenhouse API collector against the live board.
+2. Validate the Internshala collector against the permitted live page.
+3. Add robots.txt, rate-limit, and request compliance checks.
+4. Expand fixtures when source schemas change.
 
 ### Phase 4: processing
 
@@ -40,8 +39,8 @@
 
 ### Phase 5: execution and delivery
 
-- Replace the temporary background boundary with a durable worker
-- Add pipeline stage events
+- Exercise the durable worker with live PostgreSQL
+- Add pipeline stage events to the collector/cleaning path
 - Add SSE progress streaming
 - Connect the React query form
 - Add results filtering and provenance display

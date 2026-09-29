@@ -37,6 +37,9 @@ The baseline `main` branch has been pushed to GitHub. The working tree was clean
 - Async database session in `backend/app/core/database.py`
 - OpenAI parser in `backend/app/llm/parser.py`
 - Source registry in `backend/app/collectors/registry.py`
+- Approved collectors in `backend/app/collectors/internshala.py` and
+  `backend/app/collectors/greenhouse.py`, with fixture coverage
+- Record cleaning and deterministic deduplication in `backend/app/processing/`
 - Query processing boundary in `backend/app/jobs/tasks.py`
 - Query routes in `backend/app/api/routes/queries.py`
 
@@ -71,10 +74,10 @@ postgresql+asyncpg://orbis:orbis@localhost:5433/orbis_labs
 Current local verification:
 
 ```text
-7 backend tests passing
+26 backend tests passing
 Frontend production build passing
 PostgreSQL accepting connections
-Initial Alembic migration applied
+Alembic migrations and Procrastinate schema applied
 ```
 
 The test suite uses isolated SQLite databases for repeatable tests. PostgreSQL is used for local runtime/migration verification.
@@ -82,12 +85,8 @@ The test suite uses isolated SQLite databases for repeatable tests. PostgreSQL i
 ## Not yet complete
 
 - Live OpenAI smoke test with a real API key
-- Durable Procrastinate worker
-- GitLab Greenhouse collector implementation
-- Internshala collector implementation
-- Cleaning and normalization pipeline
-- Validation and deterministic confidence pipeline
-- Deduplication
+- Live-source validation and compliance checks
+- Deterministic confidence scoring
 - SSE progress implementation
 - Frontend/backend integration
 - CSV export
@@ -104,7 +103,6 @@ The test suite uses isolated SQLite databases for repeatable tests. PostgreSQL i
 
 ## Recommended first actions after branching
 
-1. OpenAI planner owner: run parser evaluation and harden error/ambiguity handling.
-2. API backend owner: complete lifecycle endpoints and durable job boundary.
-3. Frontend owner: build the dashboard against typed mock/API contracts.
-
+1. Configure an OpenAI key and run the planner evaluation.
+2. Validate the two collectors against permitted live endpoints.
+3. Connect the frontend workspace to the query API, SSE, results, and export.

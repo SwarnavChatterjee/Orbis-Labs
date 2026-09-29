@@ -21,10 +21,15 @@ PYTHONPATH=backend procrastinate -a app.jobs.tasks.procrastinate_app worker quer
 ```
 
 Only explicitly registered collectors are eligible for source routing. The
-default registry is empty until the project owner approves and registers the
-supported sources. Collectors are sync or async callables receiving a
-validated `QueryPlan` and `SourceDescriptor`, and returning validated `Record`
-objects.
+default registry contains the two approved MVP sources: Internshala and
+GitLab's Greenhouse job board. Collectors are sync or async callables receiving
+a validated `QueryPlan` and `SourceDescriptor`, and returning validated
+`Record` objects. Fixture parsers are tested before live HTTP calls are used.
+
+The live collectors are intentionally conservative: they only request the
+configured source endpoints, apply the parsed filters, and preserve the source
+URL and retrieval timestamp on every record. Review source terms, robots rules,
+rate limits, and endpoint availability before production use.
 
 Tests create isolated SQLite tables from SQLModel metadata and inject fake
 planners and collectors. The original `0001_initial` migration creates
