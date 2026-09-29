@@ -13,6 +13,7 @@ from sqlalchemy import select
 from app.core.config import settings
 from app.core.database import SessionFactory
 from app.models.db import User
+from app.models.schemas import ApiSuccess
 
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
@@ -75,7 +76,7 @@ async def google_callback(request: Request) -> RedirectResponse:
 
 
 @router.get("/me")
-async def current_user(request: Request) -> dict[str, object]:
+async def current_user(request: Request) -> ApiSuccess:
     user_id = request.session.get("user_id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -87,7 +88,7 @@ async def current_user(request: Request) -> dict[str, object]:
         user = await session.get(User, user_uuid)
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication required")
-    return {"id": str(user.id), "email": user.email, "display_name": user.display_name}
+    return ApiSuccess(data={"id": str(user.id), "email": user.email, "display_name": user.display_name})
 
 
 @router.post("/logout")
