@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
-import { downloadCsv, getCurrentUser, getHistory, getQuery, getResults, GOOGLE_LOGIN_URL, QueryHistoryItem, QueryResult, QueryStatus, rerunQuery, streamQuery, submitQuery } from "./api";
+import { DEMO_USER, downloadCsv, FRONTEND_DEMO_MODE, getCurrentUser, getDemoResults, getHistory, getQuery, getResults, GOOGLE_LOGIN_URL, QueryHistoryItem, QueryResult, QueryStatus, rerunQuery, streamQuery, submitQuery } from "./api";
 import { logout } from "./api";
 
 function ArrowUpRight() {
@@ -31,6 +31,8 @@ const suggestedQueries = [
   "Product design internships in Bengaluru",
 ];
 
+const authEntryUrl = FRONTEND_DEMO_MODE ? "/app" : GOOGLE_LOGIN_URL;
+
 function LandingPage() {
   return (
     <div className="page-shell">
@@ -38,7 +40,7 @@ function LandingPage() {
       <header className="nav wrap">
         <a className="brand" href="#top" aria-label="Orbis Labs home"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a>
         <nav className="nav-links" aria-label="Primary navigation"><a href="#how-it-works">How it works</a><a href="#principles">Why Orbis</a><a href="#about">About</a></nav>
-        <a className="google-button" href={GOOGLE_LOGIN_URL} aria-label="Sign in with Google"><img src="/google-signin.svg" alt="Sign in with Google" /></a>
+        <a className="google-button" href={authEntryUrl} aria-label="Sign in with Google"><img src="/google-signin.svg" alt="Sign in with Google" /></a>
       </header>
 
       <main id="top">
@@ -47,7 +49,7 @@ function LandingPage() {
             <div className="eyebrow"><span className="eyebrow-dot" /> Intelligence for the real world</div>
             <h1>Ask for the data.<br /><span>Get the signal.</span></h1>
             <p className="hero-intro">Orbis Labs turns plain-language questions into clean, source-backed datasets—so you can move from curiosity to confident action.</p>
-            <a className="google-button hero-cta" href={GOOGLE_LOGIN_URL} aria-label="Sign in with Google"><img src="/google-signin.svg" alt="Sign in with Google" /></a>
+            <a className="google-button hero-cta" href={authEntryUrl} aria-label="Sign in with Google"><img src="/google-signin.svg" alt="Sign in with Google" /></a>
           </div>
 
           <div className="hero-visual" aria-label="Orbis Labs collection preview">
@@ -74,16 +76,16 @@ function LandingPage() {
           <div className="principle-grid">
             <article><div className="number">01</div><h3>Source-first, always.</h3><p>Every record traces back to where it came from and when it was retrieved. No black-box lists. No made-up answers.</p><a href="#how-it-works">See our approach <ArrowUpRight /></a></article>
             <article><div className="number">02</div><h3>Structured by design.</h3><p>Messy, natural-language questions become clean, searchable datasets that your team can actually use.</p><a href="#how-it-works">Explore the workflow <ArrowUpRight /></a></article>
-            <article><div className="number">03</div><h3>Built for momentum.</h3><p>Go from “I wonder” to “we know” in minutes. Export, share, and make the next decision with confidence.</p><a href={GOOGLE_LOGIN_URL}>Start a collection <ArrowUpRight /></a></article>
+            <article><div className="number">03</div><h3>Built for momentum.</h3><p>Go from “I wonder” to “we know” in minutes. Export, share, and make the next decision with confidence.</p><a href={authEntryUrl}>Start a collection <ArrowUpRight /></a></article>
           </div>
         </section>
 
         <section className="workflow wrap" id="how-it-works">
-          <div className="workflow-panel"><div className="eyebrow"><span className="eyebrow-dot" /> From question to clarity</div><h2>A better way to<br /><span>find what matters.</span></h2><p>Orbis combines the flexibility of AI with the discipline of data engineering. Your question is just the beginning.</p><a className="text-link" href={GOOGLE_LOGIN_URL}>See it in action <ArrowUpRight /></a></div>
+          <div className="workflow-panel"><div className="eyebrow"><span className="eyebrow-dot" /> From question to clarity</div><h2>A better way to<br /><span>find what matters.</span></h2><p>Orbis combines the flexibility of AI with the discipline of data engineering. Your question is just the beginning.</p><a className="text-link" href={authEntryUrl}>See it in action <ArrowUpRight /></a></div>
           <div className="workflow-steps"><div><span>01</span><div><h3>Describe</h3><p>Say what you need in your own words. Orbis understands the intent behind the question.</p></div></div><div><span>02</span><div><h3>Discover</h3><p>We collect from permitted sources and show you exactly where every record came from.</p></div></div><div><span>03</span><div><h3>Decide</h3><p>Search, filter, validate, and export a dataset ready for the work ahead.</p></div></div></div>
         </section>
 
-        <section className="closing wrap" id="about"><div className="closing-mark"><Spark /></div><p className="eyebrow">The next insight is closer than you think</p><h2>Start with a question.</h2><a className="primary-button" href={GOOGLE_LOGIN_URL}>Build your first dataset <ArrowUpRight /></a></section>
+        <section className="closing wrap" id="about"><div className="closing-mark"><Spark /></div><p className="eyebrow">The next insight is closer than you think</p><h2>Start with a question.</h2><a className="primary-button" href={authEntryUrl}>Build your first dataset <ArrowUpRight /></a></section>
       </main>
       <footer className="footer wrap"><a className="brand" href="#top"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a><span>AI-powered data intelligence for the curious and the decisive.</span><span>© 2026 Orbis Labs</span></footer>
     </div>
@@ -109,6 +111,11 @@ function WorkspacePage() {
   const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
+    if (FRONTEND_DEMO_MODE) {
+      setUser(DEMO_USER);
+      setAuthLoading(false);
+      return;
+    }
     getCurrentUser()
       .then((currentUser) => setUser(currentUser))
       .catch(() => setUser(null))
@@ -117,6 +124,7 @@ function WorkspacePage() {
 
   useEffect(() => {
     if (!user) return;
+    if (FRONTEND_DEMO_MODE) return;
     getHistory().then((data) => setHistory(data.items)).catch(() => undefined);
   }, [user]);
 
@@ -126,7 +134,7 @@ function WorkspacePage() {
   }
 
   useEffect(() => {
-    if (!queryId) return;
+    if (!queryId || FRONTEND_DEMO_MODE) return;
     return streamQuery(
       queryId,
       (event) => {
@@ -150,6 +158,11 @@ function WorkspacePage() {
     setActiveQuery(item.raw_text);
     setQueryId(item.id);
     setStatus(item.status);
+    if (FRONTEND_DEMO_MODE) {
+      setStatusMessage("Demo collection complete — no backend required.");
+      setResults(getDemoResults(item.raw_text));
+      return;
+    }
     try {
       const details = await getQuery(item.id);
       setStatus(details.status);
@@ -169,6 +182,20 @@ function WorkspacePage() {
     setLoading(true);
     setError(null);
     setResults([]);
+    if (FRONTEND_DEMO_MODE) {
+      const rawText = query.trim();
+      const demoId = `demo-query-${Date.now()}`;
+      const demoResults = getDemoResults(rawText);
+      const demoItem: QueryHistoryItem = { id: demoId, raw_text: rawText, status: "completed", error_message: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+      setQueryId(demoId);
+      setActiveQuery(rawText);
+      setStatus("completed");
+      setStatusMessage("Demo collection complete — frontend-only data.");
+      setResults(demoResults);
+      setHistory((current) => [demoItem, ...current.filter((item) => item.id !== demoId)].slice(0, 20));
+      setLoading(false);
+      return;
+    }
     try {
       const accepted = await submitQuery(query.trim());
       setQueryId(accepted.query_id);
@@ -190,6 +217,15 @@ function WorkspacePage() {
 
   async function applyFilters() {
     if (!queryId) return;
+    if (FRONTEND_DEMO_MODE && activeQuery) {
+      const filtered = getDemoResults(activeQuery).filter((item) =>
+        (!locationFilter || (item.location ?? "").toLowerCase().includes(locationFilter.toLowerCase())) &&
+        (!roleFilter || item.role.toLowerCase().includes(roleFilter.toLowerCase())) &&
+        (!confidenceFilter || (item.confidence ?? 0) >= Number(confidenceFilter)),
+      );
+      setResults(filtered);
+      return;
+    }
     try {
       const data = await getResults(queryId, { location: locationFilter, role: roleFilter, minConfidence: confidenceFilter });
       setResults(data.items);
@@ -201,6 +237,12 @@ function WorkspacePage() {
   async function startRerun() {
     if (!queryId) return;
     setError(null);
+    if (FRONTEND_DEMO_MODE && activeQuery) {
+      setStatus("completed");
+      setStatusMessage("Demo collection complete — frontend-only data.");
+      setResults(getDemoResults(activeQuery));
+      return;
+    }
     try {
       const accepted = await rerunQuery(queryId);
       setQueryId(accepted.query_id);

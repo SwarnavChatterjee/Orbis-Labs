@@ -1,5 +1,6 @@
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api").replace(/\/$/, "");
 export const GOOGLE_LOGIN_URL = `${API_BASE}/auth/google/login`;
+export const FRONTEND_DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true";
 
 export type QueryStatus = "queued" | "running" | "planned" | "collecting" | "cleaning" | "completed" | "failed";
 
@@ -25,6 +26,24 @@ export type QueryResult = {
 };
 
 export type AuthUser = { id: string; email: string; display_name: string | null; avatar_url: string | null };
+
+export const DEMO_USER: AuthUser = {
+  id: "demo-user",
+  email: "demo@orbis-labs.local",
+  display_name: "Orbis Demo",
+  avatar_url: null,
+};
+
+export function getDemoResults(rawText: string): QueryResult[] {
+  const retrievedAt = new Date().toISOString();
+  return [
+    { id: `demo-${rawText.length}-1`, company: "Northstar Labs", role: "Product Design Intern", location: "Bengaluru, India", source_url: "https://demo.orbis-labs.local/internshala/northstar-product-design", source_name: "Internshala", retrieved_at: retrievedAt, confidence: 0.96, validation_errors: [] },
+    { id: `demo-${rawText.length}-2`, company: "GitLab", role: "Associate Product Designer", location: "Remote", source_url: "https://demo.orbis-labs.local/greenhouse/gitlab-associate-product-designer", source_name: "GitLab Greenhouse", retrieved_at: retrievedAt, confidence: 0.93, validation_errors: [] },
+    { id: `demo-${rawText.length}-3`, company: "Mosaic Digital", role: "UX Research Intern", location: "Hyderabad, India", source_url: "https://demo.orbis-labs.local/internshala/mosaic-ux-research", source_name: "Internshala", retrieved_at: retrievedAt, confidence: 0.89, validation_errors: [] },
+    { id: `demo-${rawText.length}-4`, company: "Orbit Analytics", role: "Data Analyst Intern", location: "Remote", source_url: "https://demo.orbis-labs.local/greenhouse/orbit-data-analyst", source_name: "GitLab Greenhouse", retrieved_at: retrievedAt, confidence: 0.86, validation_errors: [] },
+    { id: `demo-${rawText.length}-5`, company: "Kindred Commerce", role: "Visual Design Intern", location: "Mumbai, India", source_url: "https://demo.orbis-labs.local/internshala/kindred-visual-design", source_name: "Internshala", retrieved_at: retrievedAt, confidence: 0.82, validation_errors: [] },
+  ];
+}
 
 type Envelope<T> = { success: true; data: T } | { success: false; error: string };
 
