@@ -44,6 +44,7 @@ h1, h2, h3, p { margin-top: 0; } h1 { max-width: 700px; margin: 28px 0 25px; col
 .recent-dot.completed { background: #6dd39a; }
 .workspace-composer input, .workspace-composer select { width: 105px; padding: 7px 9px; border: 1px solid rgba(143,190,171,.17); border-radius: 999px; outline: 0; color: #a7beb4; background: rgba(6,17,14,.3); font-size: .6rem; }
 .workspace-composer input::placeholder { color: #718a80; }.workspace-composer select { width: 120px; }.workspace-composer select option { color: #17221d; }
+.suggested-queries { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 13px; color: #60786e; font-family: 'DM Mono', monospace; font-size: .56rem; }.suggested-queries button { padding: 7px 10px; border: 1px solid rgba(143,190,171,.16); border-radius: 999px; color: #8fa99f; background: rgba(16,37,31,.35); font-size: .58rem; cursor: pointer; transition: border-color .2s, color .2s, background .2s; }.suggested-queries button:hover { border-color: rgba(216,170,100,.55); color: #e0b36c; background: rgba(216,170,100,.06); }
 .filter-apply { padding: 7px 10px; border: 1px solid rgba(216,170,100,.4); border-radius: 999px; color: #dfb269; background: transparent; font-size: .6rem; cursor: pointer; }
 .primary-button:disabled, .export-button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 .active-actions { display: flex; gap: 20px; }.error-dot { background: #ed837b; box-shadow: 0 0 0 4px rgba(237,131,123,.1); }
