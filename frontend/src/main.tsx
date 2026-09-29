@@ -59,16 +59,16 @@ function LandingPage() {
           <div className="principle-grid">
             <article><div className="number">01</div><h3>Source-first, always.</h3><p>Every record traces back to where it came from and when it was retrieved. No black-box lists. No made-up answers.</p><a href="#how-it-works">See our approach <ArrowUpRight /></a></article>
             <article><div className="number">02</div><h3>Structured by design.</h3><p>Messy, natural-language questions become clean, searchable datasets that your team can actually use.</p><a href="#how-it-works">Explore the workflow <ArrowUpRight /></a></article>
-            <article><div className="number">03</div><h3>Built for momentum.</h3><p>Go from “I wonder” to “we know” in minutes. Export, share, and make the next decision with confidence.</p><a href="/app">Start a collection <ArrowUpRight /></a></article>
+            <article><div className="number">03</div><h3>Built for momentum.</h3><p>Go from “I wonder” to “we know” in minutes. Export, share, and make the next decision with confidence.</p><a href={GOOGLE_LOGIN_URL}>Start a collection <ArrowUpRight /></a></article>
           </div>
         </section>
 
         <section className="workflow wrap" id="how-it-works">
-          <div className="workflow-panel"><div className="eyebrow"><span className="eyebrow-dot" /> From question to clarity</div><h2>A better way to<br /><span>find what matters.</span></h2><p>Orbis combines the flexibility of AI with the discipline of data engineering. Your question is just the beginning.</p><a className="text-link" href="/app">See it in action <ArrowUpRight /></a></div>
+          <div className="workflow-panel"><div className="eyebrow"><span className="eyebrow-dot" /> From question to clarity</div><h2>A better way to<br /><span>find what matters.</span></h2><p>Orbis combines the flexibility of AI with the discipline of data engineering. Your question is just the beginning.</p><a className="text-link" href={GOOGLE_LOGIN_URL}>See it in action <ArrowUpRight /></a></div>
           <div className="workflow-steps"><div><span>01</span><div><h3>Describe</h3><p>Say what you need in your own words. Orbis understands the intent behind the question.</p></div></div><div><span>02</span><div><h3>Discover</h3><p>We collect from permitted sources and show you exactly where every record came from.</p></div></div><div><span>03</span><div><h3>Decide</h3><p>Search, filter, validate, and export a dataset ready for the work ahead.</p></div></div></div>
         </section>
 
-        <section className="closing wrap" id="about"><div className="closing-mark"><Spark /></div><p className="eyebrow">The next insight is closer than you think</p><h2>Start with a question.</h2><a className="primary-button" href="/app">Build your first dataset <ArrowUpRight /></a></section>
+        <section className="closing wrap" id="about"><div className="closing-mark"><Spark /></div><p className="eyebrow">The next insight is closer than you think</p><h2>Start with a question.</h2><a className="primary-button" href={GOOGLE_LOGIN_URL}>Build your first dataset <ArrowUpRight /></a></section>
       </main>
       <footer className="footer wrap"><a className="brand" href="#top"><span className="brand-mark"><span /></span><span>Orbis <em>Labs</em></span></a><span>AI-powered data intelligence for the curious and the decisive.</span><span>© 2026 Orbis Labs</span></footer>
     </div>
