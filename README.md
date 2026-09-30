@@ -207,6 +207,16 @@ procrastinate -a app.jobs.tasks.procrastinate_app schema --apply
 
 ### 3. Run the app (three terminals)
 
+For local development, start PostgreSQL, migrations, the API, query worker, and frontend together:
+
+```bash
+./scripts/dev.sh
+```
+
+Press `Ctrl+C` to stop the API, worker, and frontend. PostgreSQL remains available in Docker.
+
+To run each process separately, use the commands below.
+
 **API**
 
 ```bash
@@ -237,7 +247,11 @@ npm run dev --prefix frontend
 
 Open **http://localhost:5173**. The landing page is public; the workspace at `/app` requires an authenticated session. Sign-in starts on the landing page.
 
-Production build: `npm run build --prefix frontend`
+Complete build (backend validation + frontend production bundle):
+
+```bash
+./scripts/build.sh
+```
 
 ---
 
