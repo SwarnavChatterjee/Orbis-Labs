@@ -94,6 +94,9 @@ function LandingPage() {
 
 function WorkspacePage() {
   const params = new URLSearchParams(window.location.search);
+  const [view, setView] = useState<"explore" | "history">(
+    window.location.pathname === "/app/history" ? "history" : "explore",
+  );
   const [query, setQuery] = useState(params.get("query") ?? "");
   const [activeQuery, setActiveQuery] = useState("");
   const [queryId, setQueryId] = useState<string | null>(null);
@@ -109,6 +112,21 @@ function WorkspacePage() {
   const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState<{ email: string; avatar_url: string | null } | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
+
+  function navigateWorkspace(nextView: "explore" | "history") {
+    const path = nextView === "history" ? "/app/history" : "/app";
+    window.history.pushState({}, "", path);
+    setView(nextView);
+  }
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setView(window.location.pathname === "/app/history" ? "history" : "explore");
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   useEffect(() => {
     if (FRONTEND_DEMO_MODE) {
@@ -171,6 +189,11 @@ function WorkspacePage() {
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to load this query.");
     }
+  }
+
+  async function openHistoryQuery(item: QueryHistoryItem) {
+    navigateWorkspace("explore");
+    await loadQuery(item);
   }
 
   async function runWorkspaceQuery() {
@@ -262,16 +285,31 @@ function WorkspacePage() {
       </header>
       <div className="workspace-layout">
         <aside className="workspace-sidebar">
-          <button className="new-query" type="button" onClick={() => { setQuery(""); setActiveQuery(""); setQueryId(null); setStatus(null); setResults([]); setError(null); }}><span>+</span> New collection</button>
+          <button className="new-query" type="button" onClick={() => { navigateWorkspace("explore"); setQuery(""); setActiveQuery(""); setQueryId(null); setStatus(null); setResults([]); setError(null); }}><span>+</span> New collection</button>
           <div className="sidebar-label">Workspace</div>
-          <a className="sidebar-link active" href="/app"><span>⌕</span> Explore data</a>
-          <a className="sidebar-link" href="#history"><span>◷</span> Query history</a>
+          <button className={`sidebar-link ${view === "explore" ? "active" : ""}`} type="button" onClick={() => navigateWorkspace("explore")}><span>⌕</span> Explore data</button>
+          <button className={`sidebar-link ${view === "history" ? "active" : ""}`} type="button" onClick={() => navigateWorkspace("history")}><span>◷</span> Query history</button>
           <div className="sidebar-label history-label">Recent queries</div>
           {history.length === 0 ? <div className="history-empty">No collections yet.</div> : history.slice(0, 5).map((item) => <button className="recent-query recent-query-button" key={item.id} type="button" onClick={() => loadQuery(item)}><span className={`recent-dot ${item.status === "completed" ? "completed" : ""}`} /><div><strong>{item.raw_text}</strong><small>{item.status}</small></div></button>)}
           <div className="sidebar-footer"><div className="sidebar-card"><Spark /><div><strong>Source-backed by design</strong><small>Every record has a trail.</small></div></div><a className="sidebar-link" href="/"><span>←</span> Back to home</a></div>
         </aside>
         <main className="workspace-main">
           {authLoading ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><h1>Checking your access…</h1><p>Orbis is verifying your Google session.</p></section> : !user ? <section className="auth-gate"><div className="empty-orb"><Spark /></div><div className="eyebrow"><span className="eyebrow-dot" /> Private workspace</div><h1>Sign in from the landing page.</h1><p>Return to the Orbis Labs landing page and use the Google sign-in button to enter this workspace.</p><a className="primary-button" href="/">Back to landing page <ArrowUpRight /></a></section> : <>
+          {view === "history" ? <section className="workspace-history">
+            <div className="workspace-history-heading">
+              <div>
+                <div className="eyebrow"><span className="eyebrow-dot" /> Workspace archive</div>
+                <h1>Query history</h1>
+                <p>Return to a previous collection, inspect its status, or continue exploring its results.</p>
+              </div>
+              <button className="primary-button" type="button" onClick={() => navigateWorkspace("explore")}><span>+</span> New collection</button>
+            </div>
+            <div className="history-toolbar">
+              <div className="history-search"><span>⌕</span><input aria-label="Search query history" value={historySearch} onChange={(event) => setHistorySearch(event.target.value)} placeholder="Search your queries" /></div>
+              <span className="history-count">{history.length} {history.length === 1 ? "collection" : "collections"}</span>
+            </div>
+            {history.filter((item) => item.raw_text.toLowerCase().includes(historySearch.toLowerCase())).length === 0 ? <div className="history-page-empty"><div className="empty-orb"><Spark /></div><h2>No collections yet</h2><p>Start a natural-language collection and your query history will appear here.</p><button className="primary-button" type="button" onClick={() => navigateWorkspace("explore")}>Start a collection <ArrowUpRight /></button></div> : <div className="history-list">{history.filter((item) => item.raw_text.toLowerCase().includes(historySearch.toLowerCase())).map((item) => <article className="history-card" key={item.id}><div className={`history-card-status ${item.status}`}><span className="recent-dot" /><span>{item.status}</span></div><div className="history-card-body"><h2>{item.raw_text}</h2><div className="history-card-meta"><span>{new Date(item.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span><span>•</span><span>{new Date(item.updated_at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span></div></div><button className="history-open" type="button" onClick={() => void openHistoryQuery(item)}>Open collection <ArrowUpRight /></button></article>)}</div>}
+          </section> : <>
           <div className="workspace-heading"><div><div className="eyebrow"><span className="eyebrow-dot" /> Orbis workspace</div><h1>What are you looking for?</h1><p>Describe the dataset you need. Orbis will structure, search, and organize the signal.</p></div><div className="workspace-badge"><Spark /><span>AI-assisted<br /><strong>data discovery</strong></span></div></div>
           <form className="workspace-composer" onSubmit={submitWorkspaceQuery}>
             <div className="workspace-composer-top"><Spark /><textarea aria-label="Search for data" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="e.g. Find software engineering internships in India for 2027 graduates..." rows={3} /></div>
@@ -280,6 +318,7 @@ function WorkspacePage() {
           <div className="suggested-queries" aria-label="Suggested example queries"><span>Try a suggestion</span>{suggestedQueries.map((suggestion) => <button key={suggestion} type="button" onClick={() => setQuery(suggestion)}>{suggestion}</button>)}</div>
           {error && !activeQuery && <div className="workspace-error">{error}</div>}
           {activeQuery ? <><section className="workspace-active"><div className="active-header"><div><span className={`live-dot ${status === "failed" ? "error-dot" : ""}`} /> {status ?? "queued"}</div><span>{statusMessage ?? "Collection in progress"}</span></div><h2>{activeQuery}</h2><div className="active-grid"><div><small>Query status</small><strong>{status ?? "queued"}</strong></div><div><small>Sources</small><strong>Internshala + GitLab</strong></div><div><small>Records</small><strong>{results.length}</strong></div></div><div className="active-actions"><button className="text-link" type="button" onClick={() => setActiveQuery("")}>Edit query <ArrowUpRight /></button><button className="text-link" type="button" onClick={startRerun}>Rerun <ArrowUpRight /></button></div></section>{error && <div className="workspace-error">{error}</div>}{status === "completed" && <section className="results-panel"><div className="results-heading"><div><div className="eyebrow"><span className="eyebrow-dot" /> Collection results</div><h2>{results.length} records found</h2></div><button className="export-button" type="button" onClick={() => downloadCsv(results)} disabled={!results.length}>Export CSV <ArrowUpRight /></button></div>{results.length ? <div className="results-table-wrap"><table className="results-table"><thead><tr><th>Role</th><th>Company</th><th>Location</th><th>Source</th><th>Confidence</th></tr></thead><tbody>{results.map((result) => <tr key={result.id}><td><strong>{result.role}</strong><a href={result.source_url} target="_blank" rel="noreferrer">View source ↗</a></td><td>{result.company}</td><td>{result.location ?? "—"}</td><td><span className="source-tag">{result.source_name ?? "Unknown"}</span></td><td>{result.confidence == null ? "—" : `${Math.round(result.confidence * 100)}%`}</td></tr>)}</tbody></table></div> : <div className="results-empty">No records matched this query or its filters.</div>}</section>}</> : <section className="workspace-empty"><div className="empty-orb"><Spark /></div><h2>Your next dataset starts here.</h2><p>Ask a question above to begin a source-backed collection. You’ll see progress, provenance, and results in this workspace.</p><div className="empty-features"><span><Check /> Source verified</span><span><Check /> Structured output</span><span><Check /> Export ready</span></div></section>}
+          </>}
           </>}
         </main>
       </div>
